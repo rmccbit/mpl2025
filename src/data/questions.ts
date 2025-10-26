@@ -41,5 +41,27 @@ export const QUESTIONS: Question[] = [
 	{ id: 28, text: "What is 15% of 200?", choices: ["25", "30", "35", "40"], correctIndex: 1, runs: 2, toughness: 1 },
 	{ id: 29, text: "If 8x = 64, x =", choices: ["6", "7", "8", "9"], correctIndex: 2, runs: 1, toughness: 1 },
 	{ id: 30, text: "Simplify: (10² ÷ 5)", choices: ["10", "15", "20", "25"], correctIndex: 2, runs: 6, toughness: 2 },
+
+	// Additional questions for more variety
+	{ id: 31, text: "What is 9 × 7?", choices: ["61", "63", "65", "67"], correctIndex: 1, runs: 2, toughness: 1 },
+	{ id: 32, text: "What is 144 ÷ 12?", choices: ["10", "11", "12", "13"], correctIndex: 2, runs: 4, toughness: 1 },
+	{ id: 33, text: "What is 15 × 15?", choices: ["210", "225", "240", "250"], correctIndex: 1, runs: 6, toughness: 2 },
+	{ id: 34, text: "Find 20% of 150", choices: ["25", "30", "35", "40"], correctIndex: 1, runs: 2, toughness: 1 },
+	{ id: 35, text: "What is (3 + 4)²?", choices: ["49", "50", "48", "47"], correctIndex: 0, runs: 4, toughness: 2 },
+	{ id: 36, text: "If 4x = 32, find x", choices: ["6", "7", "8", "9"], correctIndex: 2, runs: 2, toughness: 1 },
+	{ id: 37, text: "What is 11 × 11?", choices: ["119", "121", "123", "125"], correctIndex: 1, runs: 4, toughness: 1 },
+	{ id: 38, text: "Simplify: 2⁴ + 3²", choices: ["23", "24", "25", "26"], correctIndex: 2, runs: 4, toughness: 2 },
+	{ id: 39, text: "Find 30% of 120", choices: ["33", "34", "35", "36"], correctIndex: 3, runs: 2, toughness: 1 },
+	{ id: 40, text: "What is the LCM of 4 and 6?", choices: ["10", "12", "14", "16"], correctIndex: 1, runs: 2, toughness: 2 },
+	{ id: 41, text: "What is 6³?", choices: ["206", "216", "226", "236"], correctIndex: 1, runs: 4, toughness: 2 },
+	{ id: 42, text: "Convert 3/4 to decimal", choices: ["0.65", "0.70", "0.75", "0.80"], correctIndex: 2, runs: 1, toughness: 1 },
+	{ id: 43, text: "What is 5 × 8?", choices: ["38", "40", "42", "44"], correctIndex: 1, runs: 2, toughness: 1 },
+	{ id: 44, text: "Find 50% of 80", choices: ["35", "40", "45", "50"], correctIndex: 1, runs: 2, toughness: 1 },
+	{ id: 45, text: "What is √144?", choices: ["10", "11", "12", "13"], correctIndex: 2, runs: 2, toughness: 1 },
+	{ id: 46, text: "Simplify: (5 + 3)(5 − 3)", choices: ["13", "15", "16", "18"], correctIndex: 2, runs: 4, toughness: 2 },
+	{ id: 47, text: "What is 14 × 7?", choices: ["96", "98", "100", "102"], correctIndex: 1, runs: 4, toughness: 1 },
+	{ id: 48, text: "Find 1/3 of 99", choices: ["31", "32", "33", "34"], correctIndex: 2, runs: 2, toughness: 1 },
+	{ id: 49, text: "What is 3³ + 2²?", choices: ["29", "30", "31", "32"], correctIndex: 2, runs: 4, toughness: 2 },
+	{ id: 50, text: "Simplify: 16 ÷ 2 × 4", choices: ["30", "32", "34", "36"], correctIndex: 1, runs: 4, toughness: 1 },
 ];
 

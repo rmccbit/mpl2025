@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TeamPanel } from "./TeamPanel";
 import { GameZone } from "./GameZone";
 import { Scoreboard } from "./Scoreboard";
 import { useToast } from "@/hooks/use-toast";
+import { GamePopup } from "./ui/game-popup";
+import { api, GameData } from "../services/api";
 import { QUESTIONS } from "../data/questions";
 interface GameScreenProps {
   teamAName: string;
@@ -11,6 +13,24 @@ interface GameScreenProps {
   teamBPlayers: string[];
   battingFirst: "A" | "B";
   onNewGame?: () => void;
+  onNavigateToDashboard?: () => void;
+}
+
+export interface BallDetails {
+  ballNumber: number;
+  innings: number;
+  batterName: string;
+  bowlerName: string;
+  batterTeam: string;
+  bowlerTeam: string;
+  result: string; // "runs", "wicket", "dot", "extra"
+  runsScored: number;
+  isExtra: boolean;
+  extraType?: "wide" | "noball";
+  questionId?: number;
+  correctAnswer?: boolean;
+  ballerCorrect?: boolean;
+  timestamp: string;
 }
 
 export interface GameState {
@@ -27,6 +47,7 @@ export interface GameState {
   teamAScore?: { runs: number; wickets: number; overs: number };
   gameOver?: boolean;
   winner?: string;
+  ballDetails: BallDetails[];
 }
 
 // Create two distinct 15-question pools so innings 1 and innings 2 use different questions
@@ -57,7 +78,7 @@ const [questionPools] = ((): [{ first: typeof QUESTIONS; second: typeof QUESTION
   return [pools as any];
 })();
 
-export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, onNewGame }: GameScreenProps) => {
+export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, onNewGame, onNavigateToDashboard }: GameScreenProps) => {
   const { toast } = useToast();
   const [gameState, setGameState] = useState<GameState>({
     innings: 1,
@@ -71,7 +92,9 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
     currentBowler: 10, // Start from bottom (last player)
     usedBalls: [],
     gameOver: false,
+    ballDetails: [],
   });
+  const [popup, setPopup] = useState<{ type: "runs" | "wicket" | "dot" | "extra" | "winner"; value?: number; message?: string } | null>(null);
 
   const handleBallSelect = (ballNumber: number) => {
     setGameState(prev => ({
@@ -80,15 +103,68 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
     }));
   };
 
-  const handleAnswer = (result: { batterCorrect?: boolean; bowlerCorrect?: boolean; runs?: number; isExtra?: boolean; extraType?: "wide" | "noball"; extraRuns?: number }) => {
+  const handleAnswer = (result: { 
+    batterCorrect?: boolean; 
+    bowlerCorrect?: boolean; 
+    runs?: number; 
+    isExtra?: boolean; 
+    extraType?: "wide" | "noball"; 
+    extraRuns?: number;
+    questionId?: number;
+    ballNumber?: number;
+  }) => {
     setGameState(prev => {
+      const battingPlayersLocal = prev.battingTeam === "A" ? teamAPlayers : teamBPlayers;
+      const bowlingPlayersLocal = prev.battingTeam === "A" ? teamBPlayers : teamAPlayers;
+      const batterName = battingPlayersLocal[prev.currentBatter % battingPlayersLocal.length] || "Unknown";
+      const bowlerName = bowlingPlayersLocal[prev.currentBowler % bowlingPlayersLocal.length] || "Unknown";
+      
+      // Track ball details
+      let ballResult = "";
+      let runsScored = 0;
+      
+      if (result.isExtra) {
+        ballResult = "extra";
+        runsScored = result.extraRuns ?? 1;
+      } else if (result.batterCorrect) {
+        ballResult = "runs";
+        runsScored = result.runs ?? 0;
+      } else if (result.bowlerCorrect) {
+        ballResult = "wicket";
+        runsScored = 0;
+      } else {
+        ballResult = "dot";
+        runsScored = 0;
+      }
+      // Create ball detail for tracking
+      const ballDetail: BallDetails = {
+        ballNumber: prev.balls + 1,
+        innings: prev.innings,
+        batterName: batterName,
+        bowlerName: bowlerName,
+        batterTeam: prev.battingTeam === "A" ? teamAName : teamBName,
+        bowlerTeam: prev.battingTeam === "A" ? teamBName : teamAName,
+        result: ballResult,
+        runsScored: runsScored,
+        isExtra: result.isExtra || false,
+        extraType: result.extraType,
+        questionId: result.questionId,
+        ballerCorrect: result.bowlerCorrect,
+        timestamp: new Date().toISOString(),
+      };
+
       // Handle extras first: award extraRuns (default 1), increment extras, but do not count as legal ball
       if (result.isExtra) {
         const added = result.extraRuns ?? 1;
         const newRuns = prev.runs + added;
         const newExtras = prev.extras + added;
-        toast({ title: `EXTRA +${added}`, description: `Received ${result.extraType}` });
-        return { ...prev, runs: newRuns, extras: newExtras };
+        setPopup({ type: "extra", value: added, message: `Received ${result.extraType}` });
+        return { 
+          ...prev, 
+          runs: newRuns, 
+          extras: newExtras,
+          ballDetails: [...prev.ballDetails, ballDetail],
+        };
       }
 
       const newBalls = prev.balls + 1;
@@ -103,39 +179,27 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
       if (result.batterCorrect) {
         // Batter scored runs
         newRuns += result.runs ?? 0;
-        toast({
-          title: `${result.runs ?? 0} RUN${(result.runs ?? 0) !== 1 ? "S" : ""}! 🎉`,
-          description: `Great shot by the batter!`,
-        });
+        setPopup({ type: "runs", value: result.runs ?? 0, message: "Great shot!" });
       } else if (result.bowlerCorrect) {
         // Wicket!
         newWickets += 1;
-        toast({
-          title: "WICKET! 🎯",
-          description: "Bowler got it right! Batter is out!",
-          variant: "destructive",
-        });
+        setPopup({ type: "wicket", value: 0, message: "Bowler got it right!" });
       } else {
         // Dot ball (both wrong)
-        toast({
-          title: "DOT BALL ⚪",
-          description: "Both got it wrong!",
-        });
+        setPopup({ type: "dot", value: 0, message: "Both got it wrong!" });
       }
 
-  // Determine team sizes based on who's batting currently
-  const battingPlayers = prev.battingTeam === "A" ? teamAPlayers : teamBPlayers;
-  const bowlingPlayers = prev.battingTeam === "A" ? teamBPlayers : teamAPlayers;
-  const battingSize = Math.max(1, battingPlayers.length);
-  const bowlingSize = Math.max(1, bowlingPlayers.length);
+      // Determine team sizes based on who's batting currently
+      const battingSize = Math.max(1, battingPlayersLocal.length);
+      const bowlingSize = Math.max(1, bowlingPlayersLocal.length);
 
-  // Move to next batter (top to bottom) and wrap around smaller teams
-  newBatter = (prev.currentBatter + 1) % battingSize;
+      // Move to next batter (top to bottom) and wrap around smaller teams
+      newBatter = (prev.currentBatter + 1) % battingSize;
 
-  // Move to next bowler (bottom to top) and wrap using bowlingSize
-  // Normalize prev.currentBowler to be within [0, bowlingSize-1]
-  const normalizedPrevBowler = ((prev.currentBowler % bowlingSize) + bowlingSize) % bowlingSize;
-  newBowler = (normalizedPrevBowler - 1 + bowlingSize) % bowlingSize;
+      // Move to next bowler (bottom to top) and wrap using bowlingSize
+      // Normalize prev.currentBowler to be within [0, bowlingSize-1]
+      const normalizedPrevBowler = ((prev.currentBowler % bowlingSize) + bowlingSize) % bowlingSize;
+      newBowler = (normalizedPrevBowler - 1 + bowlingSize) % bowlingSize;
 
       // Check innings boundaries: 10 balls per innings
       const BALLS_PER_INNINGS = 10;
@@ -149,7 +213,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         // Determine new batting team (switch)
         const nextBatting = prev.battingTeam === "A" ? "B" : "A";
 
-        toast({ title: "Innings Over", description: `End of innings 1. Target: ${newRuns + 1} runs.` });
+        setPopup({ type: "extra", value: 0, message: `End of innings 1. Target: ${newRuns + 1} runs.` });
 
         return {
           ...prev,
@@ -166,6 +230,8 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           currentBowler: 10,
           // reset usedBalls so all 15 questions are available again for innings 2
           usedBalls: [],
+          // Keep ball details
+          ballDetails: [...prev.ballDetails, ballDetail],
         };
       }
 
@@ -176,7 +242,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         // Early chase success
         if (typeof target === "number" && newRuns >= target) {
           const winnerName = prev.battingTeam === "A" ? teamAName : teamBName;
-          toast({ title: `Match Over`, description: `${winnerName} won by chasing the target! 🏆` });
+          setPopup({ type: "winner", value: 0, message: `${winnerName} won by chasing the target!` });
           return {
             ...prev,
             runs: newRuns,
@@ -187,6 +253,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
             currentBowler: newBowler,
             gameOver: true,
             winner: winnerName,
+            ballDetails: [...prev.ballDetails, ballDetail],
           };
         }
 
@@ -205,7 +272,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
             winnerName = "Tie";
           }
 
-          toast({ title: `Match Over`, description: winnerName === "Tie" ? `The match is a tie.` : `${winnerName} won the match! 🏆` });
+          setPopup({ type: "winner", value: 0, message: winnerName === "Tie" ? `The match is a tie.` : `${winnerName} won the match!` });
 
           return {
             ...prev,
@@ -217,6 +284,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
             currentBowler: newBowler,
             gameOver: true,
             winner: winnerName,
+            ballDetails: [...prev.ballDetails, ballDetail],
           };
         }
       }
@@ -229,18 +297,91 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         overs: newOvers,
         currentBatter: newBatter,
         currentBowler: newBowler,
+        ballDetails: [...prev.ballDetails, ballDetail],
       };
     });
   };
 
   const battingTeamPlayers = gameState.battingTeam === "A" ? teamAPlayers : teamBPlayers;
   const bowlingTeamPlayers = gameState.battingTeam === "A" ? teamBPlayers : teamAPlayers;
+  // Save game data when game is over
+  useEffect(() => {
+    if (gameState.gameOver && gameState.winner && gameState.ballDetails.length > 0) {
+      // Determine team scores correctly
+      let teamAScore: { runs: number; wickets: number; overs: number } | undefined;
+      let teamBScore: { runs: number; wickets: number; overs: number } | undefined;
+
+      if (battingFirst === "A") {
+        // Team A batted first, Team B batted second
+        teamAScore = gameState.teamAScore;
+        if (gameState.innings === 2) {
+          teamBScore = { runs: gameState.runs, wickets: gameState.wickets, overs: gameState.overs };
+        }
+      } else {
+        // Team B batted first, Team A batted second
+        teamBScore = gameState.teamAScore;
+        if (gameState.innings === 2) {
+          teamAScore = { runs: gameState.runs, wickets: gameState.wickets, overs: gameState.overs };
+        }
+      }
+
+      const gameData: GameData = {
+        teamA: {
+          name: teamAName,
+          players: teamAPlayers,
+          score: teamAScore,
+        },
+        teamB: {
+          name: teamBName,
+          players: teamBPlayers,
+          score: teamBScore,
+        },
+        battingFirst,
+        winner: gameState.winner,
+        gameOver: true,
+        timestamp: new Date().toISOString(),
+        ballDetails: gameState.ballDetails,
+      };
+      
+      console.log("Saving game data:", gameData);
+      console.log("Ball details count:", gameState.ballDetails.length);
+      
+      // Only save if we have ball details (for new games)
+      if (gameState.ballDetails.length === 0) {
+        console.warn("No ball details to save - game may have been created before ball tracking was implemented");
+      }
+      
+      api.saveGame(gameData).then(() => {
+        console.log("Game saved successfully!");
+        toast({ title: "Game Saved!", description: `Your game data has been saved with ${gameState.ballDetails.length} ball details.` });
+      }).catch((error) => {
+        console.error("Error saving game:", error);
+        toast({ title: "Save Failed", description: "Game saved to local storage instead.", variant: "destructive" });
+      });
+    }
+  }, [gameState, teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst]);
 
   return (
     <div className="min-h-screen bg-gradient-stadium p-4 animate-fade-in">
-      <div className="flex justify-end mb-2">
+      {popup && (
+        <GamePopup
+          type={popup.type}
+          value={popup.value}
+          message={popup.message}
+          onClose={() => setPopup(null)}
+        />
+      )}
+      <div className="flex justify-end mb-2 gap-2">
         <button
-          className="px-3 py-1 rounded bg-muted hover:bg-accent"
+          className="px-4 py-2 rounded-lg bg-gradient-gold text-secondary-foreground hover:opacity-90 transition-all font-semibold"
+          onClick={() => {
+            if (onNavigateToDashboard) return onNavigateToDashboard();
+          }}
+        >
+          📊 Dashboard
+        </button>
+        <button
+          className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all font-semibold"
           onClick={() => {
             if (onNewGame) return onNewGame();
             if (window.confirm("Start a new game? This will reset teams and questions.")) {
@@ -249,6 +390,17 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           }}
         >
           New Game
+        </button>
+        <button
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 transition-all font-semibold"
+          onClick={() => {
+            const newWindow = window.open(window.location.href, '_blank');
+            if (newWindow) {
+              toast({ title: "Parallel game opened", description: "Running another game in a new window!" });
+            }
+          }}
+        >
+          Open Parallel Game →
         </button>
       </div>
       <Scoreboard

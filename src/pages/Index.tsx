@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SetupScreen } from "@/components/SetupScreen";
 import { TossScreen } from "@/components/TossScreen";
-import { GameScreen } from "@/components/GameScreen";
+import { GameManager } from "@/components/GameManager";
+import { AuthScreen } from "@/components/AuthScreen";
+import { Dashboard } from "@/components/Dashboard";
 
-type Screen = "setup" | "toss" | "game";
+type Screen = "auth" | "setup" | "toss" | "game" | "dashboard";
 
 const Index = () => {
-  const [screen, setScreen] = useState<Screen>("setup");
+  const [screen, setScreen] = useState<Screen>("auth");
+  const [isOrganizer, setIsOrganizer] = useState(false);
   const [teamAName, setTeamAName] = useState("");
   const [teamBName, setTeamBName] = useState("");
   const [teamAPlayers, setTeamAPlayers] = useState<string[]>([]);
@@ -41,8 +44,35 @@ const Index = () => {
     setScreen("setup");
   };
 
+  const handleAuthSuccess = (organizer: boolean) => {
+    setIsOrganizer(organizer);
+    setScreen("dashboard");
+  };
+
+  const handleBackFromDashboard = () => {
+    setScreen("setup");
+  };
+
+  const handleNavigateToGame = () => {
+    setScreen("setup");
+  };
+
+  useEffect(() => {
+    // Check if already authenticated
+    const authData = sessionStorage.getItem("mpl_auth");
+    if (authData) {
+      const auth = JSON.parse(authData);
+      setIsOrganizer(auth.role === "organizer");
+      setScreen("dashboard");
+    }
+  }, []);
+
   return (
     <>
+      {screen === "auth" && <AuthScreen onAuthSuccess={handleAuthSuccess} />}
+      {screen === "dashboard" && (
+        <Dashboard onBack={handleNavigateToGame} onStartGame={handleNewGame} />
+      )}
       {screen === "setup" && <SetupScreen onComplete={handleSetupComplete} />}
       {screen === "toss" && (
         <TossScreen
@@ -52,7 +82,7 @@ const Index = () => {
         />
       )}
       {screen === "game" && (
-        <GameScreen
+        <GameManager
           teamAName={teamAName}
           teamBName={teamBName}
           teamAPlayers={teamAPlayers}
