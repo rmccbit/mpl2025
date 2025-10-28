@@ -12,6 +12,10 @@ export const Scoreboard = ({ teamAName, teamBName, gameState }: ScoreboardProps)
   const battingTeamName = gameState.battingTeam === "A" ? teamAName : teamBName;
   const bowlingTeamName = gameState.battingTeam === "A" ? teamBName : teamAName;
 
+  // Calculate total overs as a decimal including balls
+  const totalOvers = gameState.overs + (gameState.balls % 6) / 6;
+  const runRate = totalOvers > 0 ? (gameState.runs / totalOvers).toFixed(2) : "0.00";
+
   return (
     <Card className="bg-gradient-pitch p-6 shadow-stadium">
       {/* Show result if game over */}
@@ -21,6 +25,7 @@ export const Scoreboard = ({ teamAName, teamBName, gameState }: ScoreboardProps)
           <p className="text-lg mt-2">{gameState.winner === "Tie" ? "It's a Tie!" : `${gameState.winner} won! 🏆`}</p>
         </div>
       )}
+
       <div className="grid md:grid-cols-3 gap-6 items-center">
         {/* Current Score */}
         <div className="text-center">
@@ -63,9 +68,7 @@ export const Scoreboard = ({ teamAName, teamBName, gameState }: ScoreboardProps)
           </div>
           <div className="p-3 rounded-lg bg-muted">
             <p className="text-xs text-muted-foreground mb-1">Run Rate</p>
-            <p className="text-2xl font-bold text-foreground">
-              {gameState.overs > 0 ? (gameState.runs / gameState.overs).toFixed(2) : "0.00"}
-            </p>
+            <p className="text-2xl font-bold text-foreground">{runRate}</p>
           </div>
         </div>
       </div>
