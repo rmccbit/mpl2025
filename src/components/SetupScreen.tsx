@@ -2,11 +2,16 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Trophy, Upload, Download } from "lucide-react";
+import { Trophy, Upload, Download, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SetupScreenProps {
-  onComplete: (teamAName: string, teamBName: string, teamAPlayers: string[], teamBPlayers: string[]) => void;
+  onComplete: (
+    teamAName: string,
+    teamBName: string,
+    teamAPlayers: string[],
+    teamBPlayers: string[]
+  ) => void;
 }
 
 export const SetupScreen = ({ onComplete }: SetupScreenProps) => {
@@ -18,17 +23,17 @@ export const SetupScreen = ({ onComplete }: SetupScreenProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
-    const validTeamA = teamAPlayers.filter(p => p.trim() !== "");
-    const validTeamB = teamBPlayers.filter(p => p.trim() !== "");
-    
-    // Allow matches with fewer than 11 players per team. Require at least 1 player per team.
+    const validTeamA = teamAPlayers.filter((p) => p.trim() !== "");
+    const validTeamB = teamBPlayers.filter((p) => p.trim() !== "");
+
     if (validTeamA.length >= 1 && validTeamB.length >= 1) {
       onComplete(teamAName, teamBName, validTeamA, validTeamB);
     }
   };
 
-  // Form is valid when each team has at least one non-empty player name
-  const isValid = teamAPlayers.filter(p => p.trim() !== "").length >= 1 && teamBPlayers.filter(p => p.trim() !== "").length >= 1;
+  const isValid =
+    teamAPlayers.filter((p) => p.trim() !== "").length >= 1 &&
+    teamBPlayers.filter((p) => p.trim() !== "").length >= 1;
 
   const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,30 +41,36 @@ export const SetupScreen = ({ onComplete }: SetupScreenProps) => {
 
     try {
       const text = await file.text();
-      const extension = file.name.split('.').pop()?.toLowerCase();
+      const extension = file.name.split(".").pop()?.toLowerCase();
 
-      if (extension === 'json') {
+      if (extension === "json") {
         const data = JSON.parse(text);
         if (data.teamA && data.teamB) {
           setTeamAName(data.teamA.name || teamAName);
           setTeamBName(data.teamB.name || teamBName);
           setTeamAPlayers(data.teamA.players || teamAPlayers);
           setTeamBPlayers(data.teamB.players || teamBPlayers);
-          toast({ title: "Teams imported successfully!", description: "Team data loaded from JSON file." });
+          toast({
+            title: "Teams imported successfully!",
+            description: "Team data loaded from JSON file.",
+          });
         } else {
           throw new Error("Invalid JSON format");
         }
-      } else if (extension === 'csv') {
-        const lines = text.split('\n').filter(line => line.trim());
-        const teamAData = lines[0].split(',').map(s => s.trim());
-        const teamBData = lines[1]?.split(',').map(s => s.trim()) || [];
-        
+      } else if (extension === "csv") {
+        const lines = text.split("\n").filter((line) => line.trim());
+        const teamAData = lines[0].split(",").map((s) => s.trim());
+        const teamBData = lines[1]?.split(",").map((s) => s.trim()) || [];
+
         if (teamAData.length >= 2 && teamBData.length >= 2) {
           setTeamAName(teamAData[0]);
           setTeamAPlayers(teamAData.slice(1));
           setTeamBName(teamBData[0]);
           setTeamBPlayers(teamBData.slice(1));
-          toast({ title: "Teams imported successfully!", description: "Team data loaded from CSV file." });
+          toast({
+            title: "Teams imported successfully!",
+            description: "Team data loaded from CSV file.",
+          });
         } else {
           throw new Error("Invalid CSV format");
         }
@@ -67,31 +78,58 @@ export const SetupScreen = ({ onComplete }: SetupScreenProps) => {
         throw new Error("Unsupported file format. Please use CSV or JSON.");
       }
     } catch (error) {
-      toast({ 
-        title: "Import failed", 
-        description: error instanceof Error ? error.message : "Failed to parse file.",
-        variant: "destructive"
+      toast({
+        title: "Import failed",
+        description:
+          error instanceof Error ? error.message : "Failed to parse file.",
+        variant: "destructive",
       });
     }
-    
+
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const handleExport = () => {
     const data = {
-      teamA: { name: teamAName, players: teamAPlayers.filter(p => p.trim() !== "") },
-      teamB: { name: teamBName, players: teamBPlayers.filter(p => p.trim() !== "") }
+      teamA: {
+        name: teamAName,
+        players: teamAPlayers.filter((p) => p.trim() !== ""),
+      },
+      teamB: {
+        name: teamBName,
+        players: teamBPlayers.filter((p) => p.trim() !== ""),
+      },
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `mpl-teams-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast({ title: "Teams exported!", description: "Team data saved to file." });
+  };
+
+  const handleAddPlayer = (team: "A" | "B") => {
+    if (team === "A" && teamAPlayers.length < 11) {
+      setTeamAPlayers([...teamAPlayers, ""]);
+    } else if (team === "B" && teamBPlayers.length < 11) {
+      setTeamBPlayers([...teamBPlayers, ""]);
+    }
+  };
+
+  const handleRemovePlayer = (team: "A" | "B", index: number) => {
+    if (team === "A") {
+      const updated = teamAPlayers.filter((_, i) => i !== index);
+      setTeamAPlayers(updated);
+    } else {
+      const updated = teamBPlayers.filter((_, i) => i !== index);
+      setTeamBPlayers(updated);
+    }
   };
 
   return (
@@ -118,18 +156,36 @@ export const SetupScreen = ({ onComplete }: SetupScreenProps) => {
             </div>
             <div className="space-y-2">
               {teamAPlayers.map((player, idx) => (
-                <Input
-                  key={`team-a-${idx}`}
-                  value={player}
-                  onChange={(e) => {
-                    const newPlayers = [...teamAPlayers];
-                    newPlayers[idx] = e.target.value;
-                    setTeamAPlayers(newPlayers);
-                  }}
-                  placeholder={`Player ${idx + 1}`}
-                  className="bg-muted border-team-a/30 focus:border-team-a"
-                />
+                <div key={`team-a-${idx}`} className="flex items-center gap-2">
+                  <Input
+                    value={player}
+                    onChange={(e) => {
+                      const updated = [...teamAPlayers];
+                      updated[idx] = e.target.value;
+                      setTeamAPlayers(updated);
+                    }}
+                    placeholder={`Player ${idx + 1}`}
+                    className="bg-muted border-team-a/30 focus:border-team-a flex-1"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleRemovePlayer("A", idx)}
+                    className="rounded-full h-8 w-8"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               ))}
+              {teamAPlayers.length < 11 && (
+                <Button
+                  variant="secondary"
+                  onClick={() => handleAddPlayer("A")}
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Add Player
+                </Button>
+              )}
             </div>
           </div>
 
@@ -145,18 +201,36 @@ export const SetupScreen = ({ onComplete }: SetupScreenProps) => {
             </div>
             <div className="space-y-2">
               {teamBPlayers.map((player, idx) => (
-                <Input
-                  key={`team-b-${idx}`}
-                  value={player}
-                  onChange={(e) => {
-                    const newPlayers = [...teamBPlayers];
-                    newPlayers[idx] = e.target.value;
-                    setTeamBPlayers(newPlayers);
-                  }}
-                  placeholder={`Player ${idx + 1}`}
-                  className="bg-muted border-team-b/30 focus:border-team-b"
-                />
+                <div key={`team-b-${idx}`} className="flex items-center gap-2">
+                  <Input
+                    value={player}
+                    onChange={(e) => {
+                      const updated = [...teamBPlayers];
+                      updated[idx] = e.target.value;
+                      setTeamBPlayers(updated);
+                    }}
+                    placeholder={`Player ${idx + 1}`}
+                    className="bg-muted border-team-b/30 focus:border-team-b flex-1"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleRemovePlayer("B", idx)}
+                    className="rounded-full h-8 w-8"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               ))}
+              {teamBPlayers.length < 11 && (
+                <Button
+                  variant="secondary"
+                  onClick={() => handleAddPlayer("B")}
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Add Player
+                </Button>
+              )}
             </div>
           </div>
         </div>

@@ -6,12 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import { GamePopup } from "./ui/game-popup";
 import { api, GameData } from "../services/api";
 import { QUESTIONS } from "../data/questions";
+import { TournamentStage } from "./AuthScreen";
+
 interface GameScreenProps {
   teamAName: string;
   teamBName: string;
   teamAPlayers: string[];
   teamBPlayers: string[];
   battingFirst: "A" | "B";
+  tournamentStage: TournamentStage;
   onNewGame?: () => void;
   onNavigateToDashboard?: () => void;
 }
@@ -51,20 +54,29 @@ export interface GameState {
 }
 
 // Create two distinct 15-question pools so innings 1 and innings 2 use different questions
-const generatePools = () => {
-  const all = [...QUESTIONS];
-  const shuffled = all.sort(() => Math.random() - 0.5);
+// Filter by tournament stage
+const generatePools = (stage: TournamentStage) => {
+  // Filter questions by stage (30 questions per stage)
+  const filtered = QUESTIONS.filter(q => q.stage === stage);
+  
+  // Shuffle all 30 questions and split them into two pools of 15 each
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5);
+  
+  // First 15 questions for innings 1
   const first = shuffled.slice(0, 15).map((q, idx) => ({ ...q, id: idx + 1 }));
+  
+  // Next 15 questions for innings 2 (no duplicates)
   const second = shuffled.slice(15, 30).map((q, idx) => ({ ...q, id: idx + 16 }));
 
-  // Mark 5 random balls in each pool as extras (wide/noball)
-  const markExtras = (pool: any[]) => {
-    const idxs = Array.from({ length: pool.length }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 5);
-    for (const i of idxs) {
-      pool[i].type = Math.random() < 0.5 ? "wide" : "noball";
-      // extras typically award 1 run
-      pool[i].runs = 0; // extra doesn't carry runs from question
-    }
+  // Mark 2 random balls in each pool as extras (1 wide, 1 noball)
+  const markExtras = (pool: any[]) => {    // Get 2 random indices
+    const indices = Array.from({ length: pool.length }, (_, i) => i)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2);
+    
+    // First one is wide, second one is noball
+    pool[indices[0]].type = "wide";
+    pool[indices[1]].type = "noball";
   };
 
   markExtras(first);
@@ -72,14 +84,20 @@ const generatePools = () => {
   return { first, second };
 };
 
-const [questionPools] = ((): [{ first: typeof QUESTIONS; second: typeof QUESTIONS }] => {
-  // Use a stable initial value so pools don't reshuffle on re-render
-  const pools = generatePools();
-  return [pools as any];
-})();
-
-export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, onNewGame, onNavigateToDashboard }: GameScreenProps) => {
+export const GameScreen = ({ 
+  teamAName, 
+  teamBName, 
+  teamAPlayers, 
+  teamBPlayers, 
+  battingFirst, 
+  tournamentStage,
+  onNewGame, 
+  onNavigateToDashboard 
+}: GameScreenProps) => {
   const { toast } = useToast();
+  
+  // Generate question pools based on tournament stage
+  const [questionPools] = useState(() => generatePools(tournamentStage));
   const [gameState, setGameState] = useState<GameState>({
     innings: 1,
     battingTeam: battingFirst,
@@ -345,11 +363,8 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
       
       console.log("Saving game data:", gameData);
       console.log("Ball details count:", gameState.ballDetails.length);
-      
-      // Only save if we have ball details (for new games)
-      if (gameState.ballDetails.length === 0) {
-        console.warn("No ball details to save - game may have been created before ball tracking was implemented");
-      }
+      console.log("Team A Score:", teamAScore);
+      console.log("Team B Score:", teamBScore);
       
       api.saveGame(gameData).then(() => {
         console.log("Game saved successfully!");
@@ -359,7 +374,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         toast({ title: "Save Failed", description: "Game saved to local storage instead.", variant: "destructive" });
       });
     }
-  }, [gameState, teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst]);
+  }, [gameState.gameOver, gameState.winner, gameState.ballDetails, gameState.innings, gameState.runs, gameState.wickets, gameState.overs, gameState.teamAScore, teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, toast]);
 
   return (
     <div className="min-h-screen bg-gradient-stadium p-4 animate-fade-in">
@@ -371,37 +386,67 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           onClose={() => setPopup(null)}
         />
       )}
-      <div className="flex justify-end mb-2 gap-2">
-        <button
-          className="px-4 py-2 rounded-lg bg-gradient-gold text-secondary-foreground hover:opacity-90 transition-all font-semibold"
-          onClick={() => {
-            if (onNavigateToDashboard) return onNavigateToDashboard();
-          }}
-        >
-          📊 Dashboard
-        </button>
-        <button
-          className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all font-semibold"
-          onClick={() => {
-            if (onNewGame) return onNewGame();
-            if (window.confirm("Start a new game? This will reset teams and questions.")) {
-              window.location.reload();
-            }
-          }}
-        >
-          New Game
-        </button>
-        <button
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 transition-all font-semibold"
-          onClick={() => {
-            const newWindow = window.open(window.location.href, '_blank');
-            if (newWindow) {
-              toast({ title: "Parallel game opened", description: "Running another game in a new window!" });
-            }
-          }}
-        >
-          Open Parallel Game →
-        </button>
+      <div className="flex justify-between items-center mb-2 gap-2">
+        {/* Tournament Stage Badge */}
+        <div className="flex items-center gap-2">
+          <div className={`px-4 py-2 rounded-lg font-bold text-lg ${
+            tournamentStage === "group" ? "bg-green-600 text-white" :
+            tournamentStage === "playoffs" ? "bg-blue-600 text-white" :
+            tournamentStage === "semifinals" ? "bg-orange-600 text-white" :
+            "bg-yellow-600 text-white"
+          }`}>
+            {tournamentStage === "group" && "🏁 Group Stage"}
+            {tournamentStage === "playoffs" && "⚔️ Playoffs"}
+            {tournamentStage === "semifinals" && "🔥 Semi-Finals"}
+            {tournamentStage === "finals" && "🏆 Finals"}
+          </div>
+          {/* Innings Badge */}
+          <div className={`px-3 py-2 rounded-lg font-semibold ${
+            gameState.innings === 1 ? "bg-blue-500 text-white" : "bg-purple-500 text-white"
+          }`}>
+            {gameState.innings === 1 ? "1st Innings" : "2nd Innings"}
+          </div>
+          {/* Target Display for 2nd Innings */}
+          {gameState.innings === 2 && gameState.teamAScore && (
+            <div className="px-3 py-2 rounded-lg bg-red-600 text-white font-semibold">
+              Target: {gameState.teamAScore.runs + 1}
+            </div>
+          )}
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <button
+            className="px-4 py-2 rounded-lg bg-gradient-gold text-secondary-foreground hover:opacity-90 transition-all font-semibold"
+            onClick={() => {
+              if (onNavigateToDashboard) return onNavigateToDashboard();
+            }}
+          >
+            📊 Dashboard
+          </button>
+          <button
+            className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all font-semibold"
+            onClick={() => {
+              if (onNewGame) return onNewGame();
+              if (window.confirm("Start a new game? This will reset teams and questions.")) {
+                window.location.reload();
+              }
+            }}
+          >
+            New Game
+          </button>
+          <button
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 transition-all font-semibold"
+            onClick={() => {
+              const newWindow = window.open(window.location.href, '_blank');
+              if (newWindow) {
+                toast({ title: "Parallel game opened", description: "Running another game in a new window!" });
+              }
+            }}
+          >
+            Open Parallel Game →
+          </button>
+        </div>
       </div>
       <Scoreboard
         teamAName={teamAName}
