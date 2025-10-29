@@ -456,6 +456,7 @@ interface GameScreenProps {
   teamAPlayers: string[];
   teamBPlayers: string[];
   battingFirst: "A" | "B";
+  tournamentStage: TournamentStage;
   onNewGame?: () => void;
   onNavigateToDashboard?: () => void;
 }
@@ -497,6 +498,8 @@ const generatePools = () => {
   const all = [...QUESTIONS];
   const shuffled = all.sort(() => Math.random() - 0.5);
   const first = shuffled.slice(0, 15).map((q, idx) => ({ ...q, id: idx + 1 }));
+  
+  // Next 15 questions for innings 2 (no duplicates)
   const second = shuffled.slice(15, 30).map((q, idx) => ({ ...q, id: idx + 16 }));
 
   const markExtras = (pool: any[]) => {

@@ -6,6 +6,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { History, Play } from "lucide-react";
 import { Dashboard } from "./Dashboard";
+import { TournamentStage } from "./AuthScreen";
 
 interface GameManagerProps {
   teamAName: string;
@@ -13,11 +14,21 @@ interface GameManagerProps {
   teamAPlayers: string[];
   teamBPlayers: string[];
   battingFirst: "A" | "B";
+  tournamentStage: TournamentStage;
   onNewGame?: () => void;
   onNavigateToDashboard?: () => void;
 }
 
-export const GameManager = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, onNewGame, onNavigateToDashboard }: GameManagerProps) => {
+export const GameManager = ({ 
+  teamAName, 
+  teamBName, 
+  teamAPlayers, 
+  teamBPlayers, 
+  battingFirst, 
+  tournamentStage,
+  onNewGame, 
+  onNavigateToDashboard 
+}: GameManagerProps) => {
   const [gameHistory, setGameHistory] = useState<GameData[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -103,6 +114,7 @@ export const GameManager = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, 
         teamAPlayers={teamAPlayers}
         teamBPlayers={teamBPlayers}
         battingFirst={battingFirst}
+        tournamentStage={tournamentStage}
         onNewGame={onNewGame}
         onNavigateToDashboard={() => setShowDashboard(true)}
       />

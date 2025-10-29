@@ -3,7 +3,7 @@ import Game from '../models/Game.js';
 // Save a new game
 export const saveGame = async (req, res) => {
   try {
-    const { teamA, teamB, battingFirst, winner, gameOver, timestamp } = req.body;
+    const { teamA, teamB, battingFirst, winner, gameOver, timestamp, ballDetails } = req.body;
 
     // Validate required fields
     if (!teamA || !teamB || !battingFirst) {
@@ -21,10 +21,13 @@ export const saveGame = async (req, res) => {
       winner: winner || null,
       gameOver: gameOver || false,
       timestamp: timestamp || new Date(),
+      ballDetails: ballDetails || [], // Include ball details
     };
 
     const game = new Game(gameData);
     await game.save();
+
+    console.log(`Game saved with ${ballDetails?.length || 0} ball details`);
 
     res.status(201).json({
       success: true,
