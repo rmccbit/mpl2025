@@ -1,84 +1,119 @@
-import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
-interface IntroAnimationProps {
-  onComplete: () => void;
-  persistKey?: string; // localStorage key to mark intro as shown
-}
-
-export const IntroAnimation = ({ onComplete, persistKey = "mpl_intro_shown" }: IntroAnimationProps) => {
-  const [stage, setStage] = useState<number>(0);
+const IntroAnimation = ({ onComplete }: { onComplete?: () => void }) => {
+  const [show, setShow] = useState(true);
 
   useEffect(() => {
-    // Sequence timings (ms)
-    const timers: number[] = [];
-
-    // Throw ball to center
-    timers.push(window.setTimeout(() => setStage(1), 100));
-    // Bat appears and swing / hit
-    timers.push(window.setTimeout(() => setStage(2), 1000));
-    // Text reveal
-    timers.push(window.setTimeout(() => setStage(3), 1700));
-    // End of animation -> complete
-    timers.push(window.setTimeout(() => {
-      try { localStorage.setItem(persistKey, "1"); } catch {}
-      onComplete();
-    }, 3000));
-
-    return () => timers.forEach((t) => clearTimeout(t));
-  }, [onComplete, persistKey]);
-
-  const handleSkip = () => {
-    try { localStorage.setItem(persistKey, "1"); } catch {}
-    onComplete();
-  };
+    const timer = setTimeout(() => {
+      setShow(false);
+      if (onComplete) onComplete();
+    }, 6000); // duration of animation
+    return () => clearTimeout(timer);
+  }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#061018] to-[#0b2230]">
-      <style>{`
-        .intro-stage { position: relative; width: 100%; height: 100%; }
-        .animation-area { width: min(900px, 90%); height: 360px; position: relative; }
-        .ball { position: absolute; left: -80px; top: 50%; width: 48px; height: 48px; border-radius: 9999px; background: radial-gradient(circle at 30% 30%, #fff, #ffdd57); box-shadow: 0 6px 18px rgba(0,0,0,0.4); transform: translateY(-50%); }
-        .ball.throw { animation: throwBall 900ms cubic-bezier(.2,.8,.2,1) forwards; }
-        @keyframes throwBall { to { left: calc(50% - 24px); } }
-
-        .bat { position: absolute; right: 16%; top: 46%; width: 220px; height: 24px; transform-origin: 10% 50%; background: linear-gradient(90deg,#5b3e2b,#8b5a3c); border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.35); opacity: 0; }
-        .bat.show { opacity: 1; animation: batSwing 700ms ease forwards; }
-        @keyframes batSwing { 0% { transform: rotate(-30deg) translateX(20px); } 50% { transform: rotate(10deg) translateX(-6px); } 100% { transform: rotate(-6deg) translateX(-10px); } }
-
-        .hit-spark { position: absolute; width: 6px; height: 6px; background: #ffd34d; border-radius: 50%; filter: blur(0.4px); opacity: 0; }
-        .hit-spark.show { animation: sparkPop 360ms linear forwards; }
-        @keyframes sparkPop { 0% { opacity: 1; transform: scale(0.3); } 100% { opacity: 0; transform: scale(2) translateX(20px); } }
-
-        .title { position: absolute; left: 50%; top: 70%; transform: translate(-50%, 0); color: white; font-weight: 800; font-size: 48px; letter-spacing: 2px; opacity: 0; }
-        .title.show { animation: titleIn 800ms cubic-bezier(.2,.9,.3,1) forwards; }
-        @keyframes titleIn { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.9); } 60% { transform: translate(-50%, -6px) scale(1.03); opacity: 1; } 100% { transform: translate(-50%, 0) scale(1); } }
-
-        .sub { display:block; font-size:14px; opacity:0.85; font-weight:600; margin-top:6px; letter-spacing:1px; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; }
-
-        .skip-btn { position: absolute; right: 24px; top: 24px; background: rgba(255,255,255,0.06); color: #fff; padding: 8px 12px; border-radius: 8px; backdrop-filter: blur(6px); cursor: pointer; border: 1px solid rgba(255,255,255,0.06); }
-      `}</style>
-
-      <div className="intro-stage flex items-center justify-center w-full h-full">
-        <div className="animation-area">
-          <button aria-label="Skip intro" className="skip-btn" onClick={handleSkip}>
-            Skip
-          </button>
-
-          <div className={`ball ${stage >= 1 ? "throw" : ""}`} />
-
-          <div className={`bat ${stage >= 2 ? "show" : ""}`} />
-
-          {/* Sparks near the center when hit */}
-          <div style={{ left: 'calc(50% + 30px)', top: '46%' }} className={`hit-spark ${stage >= 2 ? "show" : ""}`} />
-          <div style={{ left: 'calc(50% + 55px)', top: '50%' }} className={`hit-spark ${stage >= 2 ? "show" : ""}`} />
-
-          <div className={`title ${stage >= 3 ? "show" : ""}`}>
-            <span style={{ display: 'block', fontSize: 56 }}>MPL</span>
-            <span className="sub">by RMC</span>
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#000000] via-[#0b1b33] to-[#001F3F] overflow-hidden"
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: 1 } }}
+        >
+          {/* Stadium Lights */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full flex justify-between px-16">
+            {[...Array(2)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="w-32 h-32 bg-white/20 blur-2xl rounded-full"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1.5, opacity: 0.4 }}
+                transition={{
+                  duration: 1.5,
+                  delay: i * 0.3,
+                  repeat: Infinity,
+                  repeatType: "mirror",
+                }}
+              />
+            ))}
           </div>
-        </div>
-      </div>
-    </div>
+
+          {/* Lightning Stroke */}
+          <motion.div
+            className="absolute w-2 h-screen bg-gradient-to-b from-yellow-300 via-orange-500 to-red-600 blur-sm"
+            initial={{ scaleY: 0, opacity: 0 }}
+            animate={{ scaleY: 1, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          />
+
+          {/* Cricket Ball */}
+          <motion.div
+            className="absolute rounded-full bg-red-600 shadow-[0_0_50px_rgba(255,0,0,0.7)]"
+            style={{ width: 100, height: 100 }}
+            initial={{ x: "-120%", rotate: -360 }}
+            animate={{ x: "120%", rotate: 720 }}
+            transition={{ duration: 2, delay: 1.2, ease: "easeInOut" }}
+          />
+
+          {/* Energy Lines */}
+          {[...Array(4)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70"
+              initial={{ x: "-100%" }}
+              animate={{ x: "100%" }}
+              transition={{
+                duration: 1.5,
+                delay: 1 + i * 0.2,
+                repeat: Infinity,
+                repeatType: "mirror",
+              }}
+              style={{ top: `${30 + i * 10}%` }}
+            />
+          ))}
+
+          {/* Team Name Reveal */}
+          <motion.h1
+            className="text-6xl md:text-8xl font-extrabold text-white tracking-widest text-center drop-shadow-[0_0_25px_#00ffff]"
+            initial={{ scale: 0.2, opacity: 0 }}
+            animate={{
+              scale: [0.2, 1.2, 1],
+              opacity: [0, 1],
+              textShadow: [
+                "0 0 20px #00FFFF",
+                "0 0 40px #00FFFF",
+                "0 0 60px #00FFFF",
+              ],
+            }}
+            transition={{
+              duration: 2,
+              delay: 2.8,
+              type: "spring",
+            }}
+          >
+            MPL 2025
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            className="text-lg md:text-2xl text-gray-300 mt-4 tracking-widest"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 4.5, duration: 1 }}
+          >
+            The Battle of Titans Begins
+          </motion.p>
+
+          {/* Fade-Out Overlay */}
+          <motion.div
+            className="absolute inset-0 bg-black"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0, 1] }}
+            transition={{ delay: 5.5, duration: 1 }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
