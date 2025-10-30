@@ -16,11 +16,15 @@ interface GameZoneProps {
   availableBalls: (Question | null)[];
   onBallSelect: (ballNumber: number) => void;
   onAnswer: (result: { batterCorrect: boolean; bowlerCorrect?: boolean; runs: number }) => void;
+  canSelectBall?: boolean;
+  selectedBatterName?: string | null;
+  selectedBowlerName?: string | null;
 }
 
-export const GameZone = ({ availableBalls, onBallSelect, onAnswer }: GameZoneProps) => {
+export const GameZone = ({ availableBalls, onBallSelect, onAnswer, canSelectBall = true, selectedBatterName = null, selectedBowlerName = null }: GameZoneProps) => {
   const [selectedBall, setSelectedBall] = useState<Question | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(30);
+  const [baseTime, setBaseTime] = useState<number>(30);
   const [stage, setStage] = useState<"batter" | "bowler" | null>(null);
   const [batterAnswer, setBatterAnswer] = useState<number | null>(null);
 
@@ -35,26 +39,42 @@ export const GameZone = ({ availableBalls, onBallSelect, onAnswer }: GameZonePro
             } else {
               handleBowlerAnswer(false);
             }
-            return 30;
+            return baseTime;
           }
           return prev - 1;
         });
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [selectedBall, stage, timeLeft]);
+  }, [selectedBall, stage, timeLeft, baseTime]);
 
   const handleBallClick = (ball: Question) => {
+    if (!canSelectBall) return;
+    // If this is an extra (wide or no-ball), auto-award 1 run, don't consume a legal ball, and don't open question UI
+    if ((ball as any).type === "wide" || (ball as any).type === "noball") {
+      onAnswer({ batterCorrect: false, bowlerCorrect: false, runs: 0, ...( { } as any), } as any);
+      // Send explicit extra meta through a second call that GameScreen understands
+      // Consolidate in one call using isExtra fields
+      onAnswer({ batterCorrect: false, bowlerCorrect: false, runs: 0, } as any);
+      // Better: single call with extra flags
+      // But to avoid signature widening here, call once with the correct flags
+      // @ts-ignore
+      onAnswer({ isExtra: true, extraType: (ball as any).type, extraRuns: 1, questionId: ball.id });
+      return;
+    }
+    const runs = ball.runs;
+    const mapped = runs >= 6 ? 60 : runs === 4 ? 45 : runs === 2 ? 30 : 20; // 1 or 0 => 20s
+    setBaseTime(mapped);
     setSelectedBall(ball);
     setStage("batter");
-    setTimeLeft(30);
+    setTimeLeft(mapped);
     setBatterAnswer(null);
     onBallSelect(ball.id);
   };
 
   const handleBatterWrong = () => {
     setStage("bowler");
-    setTimeLeft(30);
+    setTimeLeft(baseTime);
   };
 
   const handleAnswerClick = (optionIndex: number) => {
@@ -104,28 +124,41 @@ export const GameZone = ({ availableBalls, onBallSelect, onAnswer }: GameZonePro
           <h3 className="text-xl font-bold text-center text-secondary">Select a Ball</h3>
           <Zap className="w-6 h-6 text-secondary" />
         </div>
-        <div className="grid grid-cols-5 gap-3">
+        {!canSelectBall && (
+          <div className="mb-4 text-center text-sm text-muted-foreground">
+            Select bowler then batter to enable balls.
+          </div>
+        )}
+        {canSelectBall && (selectedBowlerName || selectedBatterName) && (
+          <div className="mb-4 text-center text-xs text-muted-foreground">
+            {selectedBowlerName ? `Bowler: ${selectedBowlerName}` : ""}
+            {selectedBowlerName && selectedBatterName ? " • " : ""}
+            {selectedBatterName ? `Batter: ${selectedBatterName}` : ""}
+          </div>
+        )}
+        <div className="grid grid-cols-5 gap-5">
           {Array.from({ length: 15 }, (_, i) => {
             const ball = availableBalls[i];
             const isAvailable = ball !== null;
             return (
               <motion.div
                 key={i + 1}
-                whileHover={{ scale: isAvailable ? 1.1 : 1 }}
-                whileTap={{ scale: isAvailable ? 0.95 : 1 }}
+                whileHover={{ scale: isAvailable && canSelectBall ? 1.06 : 1 }}
+                whileTap={{ scale: isAvailable && canSelectBall ? 0.98 : 1 }}
               >
                 <Button
                   onClick={() => {
                     if (ball) handleBallClick(ball);
                   }}
-                  disabled={!isAvailable}
-                  className={`aspect-square text-lg font-bold transition-all ${
-                    isAvailable
-                      ? "bg-gradient-pitch hover:shadow-glow hover:border-primary border-2"
+                  disabled={!isAvailable || !canSelectBall}
+                  aria-label={`Ball ${i + 1}`}
+                  className={`rounded-full text-base font-bold transition-all relative overflow-hidden ring-1 ring-white/10 ${
+                    isAvailable && canSelectBall
+                      ? "cricket-ball hover:shadow-glow hover:-translate-y-0.5"
                       : "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                  }`}
+                  } w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20`}
                 >
-                  {i + 1}
+                  <span className="relative z-10">{i + 1}</span>
                 </Button>
               </motion.div>
             );
@@ -143,10 +176,8 @@ export const GameZone = ({ availableBalls, onBallSelect, onAnswer }: GameZonePro
           <Card className="bg-card/80 backdrop-blur-sm p-8 shadow-stadium border-2 border-secondary/30">
             <div className="space-y-6">
               <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-gold mb-4 border-2 border-yellow-400/50">
-                  <Circle className="w-4 h-4" />
-                  <span className="font-bold">Ball {selectedBall.id}</span>
-                  <Circle className="w-4 h-4" />
+                <div className="mx-auto mb-4 w-24 h-24 rounded-full cricket-ball flex items-center justify-center text-lg font-bold">
+                  Ball {selectedBall.id}
                 </div>
                 
                 {/* Timer */}
@@ -172,7 +203,7 @@ export const GameZone = ({ availableBalls, onBallSelect, onAnswer }: GameZonePro
                   </motion.span>
                 </div>
 
-                <h3 className="text-2xl font-bold text-foreground mb-2">
+                <h3 className="text-2xl font-bold text-foreground mb-2 break-words leading-relaxed">
                   {selectedBall.text}
                 </h3>
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -192,13 +223,13 @@ export const GameZone = ({ availableBalls, onBallSelect, onAnswer }: GameZonePro
                       onClick={() => handleAnswerClick(idx)}
                       size="lg"
                       disabled={stage === "bowler" && batterAnswer === idx}
-                      className={`h-20 text-lg bg-muted hover:bg-accent transition-all border-2 ${
+                      className={`min-h-16 h-auto py-4 text-base bg-muted hover:bg-accent transition-all border-2 text-left whitespace-normal break-words ${
                         stage === "bowler" && batterAnswer === idx 
                           ? "opacity-50 cursor-not-allowed" 
                           : "hover:border-primary"
                       }`}
                     >
-                      {String.fromCharCode(65 + idx)}. {option}
+                      <span className="font-semibold mr-2">{String.fromCharCode(65 + idx)}.</span> {option}
                     </Button>
                   </motion.div>
                 ))}

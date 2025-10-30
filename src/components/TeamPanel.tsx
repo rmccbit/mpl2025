@@ -7,9 +7,13 @@ interface TeamPanelProps {
   color: "team-a" | "team-b";
   currentPlayer: number;
   role: "batting" | "bowling";
+  selectable?: boolean;
+  selectedIndex?: number | null;
+  onSelect?: (index: number) => void;
+  lockedIndices?: number[];
 }
 
-export const TeamPanel = ({ teamName, players, color, currentPlayer, role }: TeamPanelProps) => {
+export const TeamPanel = ({ teamName, players, color, currentPlayer, role, selectable = false, selectedIndex = null, onSelect, lockedIndices = [] }: TeamPanelProps) => {
   return (
     <Card className="bg-card/80 backdrop-blur-sm p-4 shadow-stadium animate-fade-in-scale">
       <div className={`p-3 rounded-t-lg mb-4 bg-gradient-${color}`}>
@@ -21,11 +25,16 @@ export const TeamPanel = ({ teamName, players, color, currentPlayer, role }: Tea
         {players.map((player, idx) => (
           <div
             key={idx}
+            onClick={() => {
+              if (!selectable || !onSelect) return;
+              if (lockedIndices.includes(idx)) return;
+              onSelect(idx);
+            }}
             className={`p-3 rounded-lg border transition-all ${
               idx === currentPlayer
                 ? `border-${color} bg-${color}/10 shadow-glow`
                 : "border-border bg-muted/30"
-            }`}
+            } ${selectable ? "cursor-pointer" : ""} ${lockedIndices.includes(idx) ? "opacity-50 cursor-not-allowed" : ""} ${selectedIndex === idx ? `ring-2 ring-offset-2 ring-${color}` : ""}`}
           >
             <div className="flex items-center gap-2">
               {idx === currentPlayer ? (
@@ -36,6 +45,12 @@ export const TeamPanel = ({ teamName, players, color, currentPlayer, role }: Tea
               <span className={`text-sm font-medium ${idx === currentPlayer ? "text-foreground" : "text-muted-foreground"}`}>
                 {idx + 1}. {player}
               </span>
+              {selectable && selectedIndex === idx && (
+                <span className={`ml-auto text-xs font-semibold text-${color}`}>Selected</span>
+              )}
+              {lockedIndices.includes(idx) && (
+                <span className="ml-auto text-xs font-semibold text-destructive">Locked</span>
+              )}
             </div>
           </div>
         ))}

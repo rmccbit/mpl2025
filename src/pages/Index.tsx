@@ -56,11 +56,30 @@ const Index = () => {
   };
 
   const handleBackFromDashboard = () => {
+    // Intelligent resume: if an in-progress game exists, return to game, else setup
+    try {
+      const saved = localStorage.getItem("mpl_current_game");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.gameState && parsed.gameState.gameOver === false) {
+          if (parsed.meta) {
+            if (parsed.meta.teamAName) setTeamAName(parsed.meta.teamAName);
+            if (parsed.meta.teamBName) setTeamBName(parsed.meta.teamBName);
+            if (parsed.meta.teamAPlayers) setTeamAPlayers(parsed.meta.teamAPlayers);
+            if (parsed.meta.teamBPlayers) setTeamBPlayers(parsed.meta.teamBPlayers);
+            if (parsed.meta.battingFirst) setBattingFirst(parsed.meta.battingFirst);
+          }
+          setScreen("game");
+          return;
+        }
+      }
+    } catch {}
     setScreen("setup");
   };
 
   const handleNavigateToGame = () => {
-    setScreen("setup");
+    // From dashboard back: try resume if a game exists
+    handleBackFromDashboard();
   };
 
   useEffect(() => {

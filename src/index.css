@@ -84,3 +84,42 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Red cricket ball with white seam */
+.cricket-ball {
+  position: relative;
+  color: white;
+  background: radial-gradient(120% 120% at 30% 25%, #ff7b7b 0%, #d91f26 45%, #8a0e12 100%);
+  box-shadow:
+    inset 8px 8px 16px rgba(0, 0, 0, 0.35),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.08),
+    0 8px 20px rgba(0, 0, 0, 0.45);
+}
+.cricket-ball::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(150% 80% at 30% 20%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.1) 35%, transparent 50%);
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.cricket-ball::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(to right, rgba(255,255,255,0.8), rgba(255,255,255,0.9), rgba(255,255,255,0.8)) 0 0/100% 2px no-repeat,
+    repeating-linear-gradient(to right, rgba(255,255,255,0.85) 0 6px, transparent 6px 10px) 0 0/100% 2px no-repeat;
+  filter: drop-shadow(0 0 1px rgba(255,255,255,0.6));
+  opacity: 0.95;
+}
+
+/* Improve long question readability */
+.question-text {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
