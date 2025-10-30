@@ -16,7 +16,7 @@ export const GamePopup = ({ type, value, message, onClose }: GamePopupProps) => 
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(onClose, 300);
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [onClose]);

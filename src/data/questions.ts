@@ -107,7 +107,7 @@ export const QUESTIONS: Question[] = [
   
   // FINALS
   { id: 91, text: "What is the LCM of 4 and 6?", choices: ["10", "12", "14", "16"], correctIndex: 1, runs: 2, stage: "finals" },
-  { id: 92, text: "What is 6³?", choices: ["206", "216", "226", "236"], correctIndex: 1, runs: 4, stage: "finals" },
+  { id: 92, text: "What is 6³?", choices: ["206", "216", "226", "236"], correctIndex: 1, runs: 6, stage: "finals" },
   { id: 93, text: "Convert 3/4 to decimal", choices: ["0.65", "0.70", "0.75", "0.80"], correctIndex: 2, runs: 1, stage: "finals" },
   { id: 94, text: "What is 5 × 8?", choices: ["38", "40", "42", "44"], correctIndex: 1, runs: 2, stage: "finals" },
   { id: 95, text: "Find 50% of 80", choices: ["35", "40", "45", "50"], correctIndex: 1, runs: 2, stage: "finals" },
@@ -120,7 +120,7 @@ export const QUESTIONS: Question[] = [
   { id: 102, text: "What is 13 × 9?", choices: ["115", "117", "119", "121"], correctIndex: 1, runs: 4, stage: "finals" },
   { id: 103, text: "Find the HCF of 12 and 18", choices: ["4", "5", "6", "9"], correctIndex: 2, runs: 2, stage: "finals" },
   { id: 104, text: "What is 19 × 7?", choices: ["131", "133", "135", "137"], correctIndex: 1, runs: 4, stage: "finals" },
-  { id: 105, text: "Simplify: √225", choices: ["13", "14", "15", "16"], correctIndex: 2, runs: 2, stage: "finals" },
+  { id: 105, text: "Simplify: √225", choices: ["13", "14", "15", "16"], correctIndex: 2, runs: 6, stage: "finals" },
   { id: 106, text: "What is 7³?", choices: ["323", "333", "343", "353"], correctIndex: 2, runs: 4, stage: "finals" },
   { id: 107, text: "Find 60% of 150", choices: ["85", "88", "90", "92"], correctIndex: 2, runs: 2, stage: "finals" },
   { id: 108, text: "What is 14²?", choices: ["186", "192", "196", "200"], correctIndex: 2, runs: 4, stage: "finals" },
@@ -135,5 +135,5 @@ export const QUESTIONS: Question[] = [
   { id: 117, text: "Simplify: 5⁴ ÷ 5", choices: ["100", "115", "125", "135"], correctIndex: 2, runs: 4, stage: "finals" },
   { id: 118, text: "What is 18²?", choices: ["314", "320", "324", "330"], correctIndex: 2, runs: 4, stage: "finals" },
   { id: 119, text: "Find 75% of 160", choices: ["115", "118", "120", "122"], correctIndex: 2, runs: 2, stage: "finals" },
-  { id: 120, text: "What is 8³?", choices: ["502", "508", "512", "518"], correctIndex: 2, runs: 4, stage: "finals" }
+  { id: 120, text: "What is 8³?", choices: ["502", "508", "512", "518"], correctIndex: 2, runs: 6, stage: "finals" }
 ];

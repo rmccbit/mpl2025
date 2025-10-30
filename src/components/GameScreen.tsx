@@ -8,6 +8,7 @@ import { api, GameData } from "../services/api";
 import { QUESTIONS } from "../data/questions";
 import { CelebrationOverlay } from "./CelebrationOverlay";
 import { TournamentStage } from "./AuthScreen";
+import { LayoutDashboard, History, RefreshCw, Zap } from "lucide-react";
 
 interface GameScreenProps {
   teamAName: string;
@@ -17,6 +18,7 @@ interface GameScreenProps {
   battingFirst: "A" | "B";
   onNewGame?: () => void;
   onNavigateToDashboard?: () => void;
+  onNavigateToHistory?: () => void;
 }
 
 export interface BallDetails {
@@ -122,7 +124,7 @@ const generatePools = (stage: TournamentStage) => {
   return { first, second };
 };
 
-export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, onNewGame, onNavigateToDashboard }: GameScreenProps) => {
+export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, onNewGame, onNavigateToDashboard, onNavigateToHistory }: GameScreenProps) => {
   const { toast } = useToast();
   
   // Get user's stage and generate pools accordingly
@@ -545,6 +547,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         winner: gameState.winner,
         gameOver: true,
         timestamp: new Date().toISOString(),
+        tournamentStage: userStage,
         ballDetails: gameState.ballDetails,
       };
       
@@ -619,59 +622,74 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           onClose={() => setPopup(null)}
         />
       )}
-      <div className="flex justify-between items-center mb-2 gap-2">
-        {/* Tournament Stage Badge */}
-        <div className="flex items-center gap-2">
-          <div className={`px-4 py-2 rounded-lg font-bold text-sm ${
-            userStage === "group" ? "bg-green-900/40 border-2 border-green-600 text-green-200" :
-            userStage === "playoffs" ? "bg-blue-900/40 border-2 border-blue-600 text-blue-200" :
-            userStage === "semifinals" ? "bg-orange-900/40 border-2 border-orange-600 text-orange-200" :
-            "bg-yellow-900/40 border-2 border-yellow-600 text-yellow-200"
+      {/* Header Bar */}
+      <div className="mb-3 p-3 rounded-xl bg-card/60 border border-border/50 backdrop-blur-sm shadow-sm">
+        <div className="flex justify-between items-center gap-3">
+          {/* Tournament Stage Badge */}
+          <div className={`px-4 py-2 rounded-lg font-bold text-sm border-2 backdrop-blur ${
+            userStage === "group" ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-100" :
+            userStage === "playoffs" ? "bg-blue-500/20 border-blue-500/50 text-blue-100" :
+            userStage === "semifinals" ? "bg-orange-500/20 border-orange-500/50 text-orange-100" :
+            "bg-yellow-500/20 border-yellow-500/50 text-yellow-100"
           }`}>
             {userStage === "group" ? "🏁 GROUP STAGE" :
              userStage === "playoffs" ? "⚔️ PLAYOFFS" :
              userStage === "semifinals" ? "🔥 SEMI-FINALS" :
              "🏆 FINALS"}
           </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <button
-            className="px-4 py-2 rounded-lg bg-gradient-gold text-secondary-foreground hover:opacity-90 transition-all font-semibold"
-            onClick={() => {
-              if (onNavigateToDashboard) return onNavigateToDashboard();
-            }}
-          >
-            📊 Dashboard
-          </button>
-          <button
-            className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all font-semibold"
-            onClick={() => {
-              try { localStorage.removeItem('mpl_current_game'); } catch {}
-              setSelectedBatterIndex(null);
-              setSelectedBowlerIndex(null);
-              setLockedBattersA([]);
-              setLockedBattersB([]);
-              setPendingQuestionId(null);
-              if (onNewGame) return onNewGame();
-              if (window.confirm("Start a new game? This will reset teams and questions.")) {
-                window.location.reload();
-              }
-            }}
-          >
-            New Game
-          </button>
-          <button
-            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 transition-all font-semibold"
-            onClick={() => {
-              const newWindow = window.open(window.location.href, '_blank');
-              if (newWindow) {
-                toast({ title: "Parallel game opened", description: "Running another game in a new window!" });
-              }
-            }}
-          >
-            Open Parallel Game →
-          </button>
+          
+          {/* Action Buttons */}
+          <div className="flex gap-2 flex-wrap justify-end">
+            <button
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white hover:from-amber-600 hover:to-yellow-600 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-2"
+              onClick={() => {
+                if (onNavigateToDashboard) return onNavigateToDashboard();
+              }}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </button>
+            <button
+              className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-2"
+              onClick={() => {
+                if (onNavigateToHistory) return onNavigateToHistory();
+              }}
+            >
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">History</span>
+            </button>
+            <button
+              className="px-3 py-2 rounded-lg bg-muted border border-border hover:bg-muted/80 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-2"
+              onClick={() => {
+                try { localStorage.removeItem('mpl_current_game'); } catch {}
+                setSelectedBatterIndex(null);
+                setSelectedBowlerIndex(null);
+                setLockedBattersA([]);
+                setLockedBattersB([]);
+                setPendingQuestionId(null);
+                if (onNewGame) return onNewGame();
+                if (window.confirm("Start a new game? This will reset teams and questions.")) {
+                  window.location.reload();
+                }
+              }}
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">New Game</span>
+            </button>
+            <button
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-1.5"
+              onClick={() => {
+                const newWindow = window.open(window.location.href, '_blank');
+                if (newWindow) {
+                  toast({ title: "Parallel game opened", description: "Running another game in a new window!" });
+                }
+              }}
+            >
+              <Zap className="w-4 h-4" />
+              <span className="hidden sm:inline">Parallel</span>
+              <span className="hidden md:inline">Game</span>
+            </button>
+          </div>
         </div>
       </div>
       <Scoreboard

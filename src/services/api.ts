@@ -16,6 +16,7 @@ export interface GameData {
   winner?: string;
   gameOver: boolean;
   timestamp: string;
+  tournamentStage?: "group" | "playoffs" | "semifinals" | "finals";
   ballDetails?: Array<{
     ballNumber: number;
     innings: number;
