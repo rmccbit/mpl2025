@@ -7,6 +7,8 @@ import { GamePopup } from "./ui/game-popup";
 import { api, GameData } from "../services/api";
 import { QUESTIONS } from "../data/questions";
 import { CelebrationOverlay } from "./CelebrationOverlay";
+import { TournamentStage } from "./AuthScreen";
+
 interface GameScreenProps {
   teamAName: string;
   teamBName: string;
@@ -51,10 +53,53 @@ export interface GameState {
   ballDetails: BallDetails[];
 }
 
+// Get the current user's tournament stage from session storage
+const getUserStage = (): TournamentStage => {
+  try {
+    const authData = sessionStorage.getItem("mpl_auth");
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      // If organizer or no stage specified, default to group stage
+      return parsed.stage || "group";
+    }
+  } catch (error) {
+    console.error("Error parsing auth data:", error);
+  }
+  return "group"; // Default to group stage
+};
+
 // Create two distinct 15-question pools so innings 1 and innings 2 use different questions
-const generatePools = () => {
-  const all = [...QUESTIONS];
-  const shuffled = all.sort(() => Math.random() - 0.5);
+// Filter by tournament stage
+const generatePools = (stage: TournamentStage) => {
+  // Filter questions by stage
+  const stageQuestions = QUESTIONS.filter(q => q.stage === stage);
+  
+  if (stageQuestions.length < 30) {
+    console.warn(`Not enough questions for stage ${stage}. Found ${stageQuestions.length}, need at least 30.`);
+    // Fall back to all questions if not enough stage-specific questions
+    const all = [...QUESTIONS];
+    const shuffled = all.sort(() => Math.random() - 0.5);
+    const first = shuffled.slice(0, 15).map((q, idx) => ({ ...q, id: idx + 1 }));
+    const second = shuffled.slice(15, 30).map((q, idx) => ({ ...q, id: idx + 16 }));
+    
+    const markExtras = (pool: any[]) => {
+      const indices = Array.from({ length: pool.length }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 3);
+      if (indices.length >= 3) {
+        pool[indices[0]].type = "wide";
+        pool[indices[1]].type = "wide";
+        pool[indices[2]].type = "noball";
+        pool[indices[0]].runs = 0;
+        pool[indices[1]].runs = 0;
+        pool[indices[2]].runs = 0;
+      }
+    };
+    
+    markExtras(first);
+    markExtras(second);
+    return { first, second };
+  }
+  
+  const shuffled = stageQuestions.sort(() => Math.random() - 0.5);
   const first = shuffled.slice(0, 15).map((q, idx) => ({ ...q, id: idx + 1 }));
   const second = shuffled.slice(15, 30).map((q, idx) => ({ ...q, id: idx + 16 }));
 
@@ -77,14 +122,12 @@ const generatePools = () => {
   return { first, second };
 };
 
-const [questionPools] = ((): [{ first: typeof QUESTIONS; second: typeof QUESTIONS }] => {
-  // Use a stable initial value so pools don't reshuffle on re-render
-  const pools = generatePools();
-  return [pools as any];
-})();
-
 export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, battingFirst, onNewGame, onNavigateToDashboard }: GameScreenProps) => {
   const { toast } = useToast();
+  
+  // Get user's stage and generate pools accordingly
+  const [userStage] = useState<TournamentStage>(() => getUserStage());
+  const [questionPools] = useState(() => generatePools(userStage));
   const [gameState, setGameState] = useState<GameState>({
     innings: 1,
     battingTeam: battingFirst,
@@ -106,6 +149,28 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
   const [popup, setPopup] = useState<{ type: "runs" | "wicket" | "dot" | "extra" | "winner"; value?: number; message?: string } | null>(null);
   const [pendingQuestionId, setPendingQuestionId] = useState<number | null>(null);
   const [celebration, setCelebration] = useState<{ type: "four" | "six" | "win" | null; visible: boolean }>({ type: null, visible: false });
+
+  // Show stage notification on mount
+  useEffect(() => {
+    const stageEmojis = {
+      group: "🏁",
+      playoffs: "⚔️",
+      semifinals: "🔥",
+      finals: "🏆"
+    };
+    const stageNames = {
+      group: "Group Stage",
+      playoffs: "Playoffs",
+      semifinals: "Semi-Finals",
+      finals: "Finals"
+    };
+    
+    toast({
+      title: `${stageEmojis[userStage]} ${stageNames[userStage]} Questions`,
+      description: `Playing with ${stageNames[userStage]} difficulty level.`,
+      duration: 3000,
+    });
+  }, [userStage, toast]);
 
   const handleBallSelect = (ballNumber: number) => {
     if (selectedBowlerIndex === null || selectedBatterIndex === null) {
@@ -199,7 +264,10 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
       if (result.batterCorrect) {
         // Batter scored runs
         newRuns += result.runs ?? 0;
-        setPopup({ type: "runs", value: result.runs ?? 0, message: "Great shot!" });
+        // Only show popup for runs less than 4 (celebration handles 4 and 6)
+        if ((result.runs ?? 0) < 4) {
+          setPopup({ type: "runs", value: result.runs ?? 0, message: "Great shot!" });
+        }
         if ((result.runs ?? 0) >= 4) {
           setCelebration({ type: (result.runs ?? 0) >= 6 ? "six" : "four", visible: true });
         }
@@ -264,7 +332,10 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
               winnerName = "Tie";
             }
 
-            setPopup({ type: "winner", value: 0, message: winnerName === "Tie" ? `The match is a tie.` : `${winnerName} won the match!` });
+            // Only show popup for tie (celebration handles win)
+            if (winnerName === "Tie") {
+              setPopup({ type: "winner", value: 0, message: `The match is a tie.` });
+            }
             if (winnerName !== "Tie") {
               setCelebration({ type: "win", visible: true });
             }
@@ -341,7 +412,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         // Early chase success
         if (typeof target === "number" && newRuns >= target) {
           const winnerName = prev.battingTeam === "A" ? teamAName : teamBName;
-          setPopup({ type: "winner", value: 0, message: `${winnerName} won by chasing the target!` });
+          // Only celebration, no popup for win
           setCelebration({ type: "win", visible: true });
           const endWinState = {
             ...prev,
@@ -376,7 +447,10 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
             winnerName = "Tie";
           }
 
-          setPopup({ type: "winner", value: 0, message: winnerName === "Tie" ? `The match is a tie.` : `${winnerName} won the match!` });
+          // Only show popup for tie (celebration handles win)
+          if (winnerName === "Tie") {
+            setPopup({ type: "winner", value: 0, message: `The match is a tie.` });
+          }
           if (winnerName !== "Tie") {
             setCelebration({ type: "win", visible: true });
           }
@@ -529,43 +603,60 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           onClose={() => setPopup(null)}
         />
       )}
-      <div className="flex justify-end mb-2 gap-2">
-        <button
-          className="px-4 py-2 rounded-lg bg-gradient-gold text-secondary-foreground hover:opacity-90 transition-all font-semibold"
-          onClick={() => {
-            if (onNavigateToDashboard) return onNavigateToDashboard();
-          }}
-        >
-          📊 Dashboard
-        </button>
-        <button
-          className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all font-semibold"
-          onClick={() => {
-            try { localStorage.removeItem('mpl_current_game'); } catch {}
-            setSelectedBatterIndex(null);
-            setSelectedBowlerIndex(null);
-            setLockedBattersA([]);
-            setLockedBattersB([]);
-            setPendingQuestionId(null);
-            if (onNewGame) return onNewGame();
-            if (window.confirm("Start a new game? This will reset teams and questions.")) {
-              window.location.reload();
-            }
-          }}
-        >
-          New Game
-        </button>
-        <button
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 transition-all font-semibold"
-          onClick={() => {
-            const newWindow = window.open(window.location.href, '_blank');
-            if (newWindow) {
-              toast({ title: "Parallel game opened", description: "Running another game in a new window!" });
-            }
-          }}
-        >
-          Open Parallel Game →
-        </button>
+      <div className="flex justify-between items-center mb-2 gap-2">
+        {/* Tournament Stage Badge */}
+        <div className="flex items-center gap-2">
+          <div className={`px-4 py-2 rounded-lg font-bold text-sm ${
+            userStage === "group" ? "bg-green-900/40 border-2 border-green-600 text-green-200" :
+            userStage === "playoffs" ? "bg-blue-900/40 border-2 border-blue-600 text-blue-200" :
+            userStage === "semifinals" ? "bg-orange-900/40 border-2 border-orange-600 text-orange-200" :
+            "bg-yellow-900/40 border-2 border-yellow-600 text-yellow-200"
+          }`}>
+            {userStage === "group" ? "🏁 GROUP STAGE" :
+             userStage === "playoffs" ? "⚔️ PLAYOFFS" :
+             userStage === "semifinals" ? "🔥 SEMI-FINALS" :
+             "🏆 FINALS"}
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          <button
+            className="px-4 py-2 rounded-lg bg-gradient-gold text-secondary-foreground hover:opacity-90 transition-all font-semibold"
+            onClick={() => {
+              if (onNavigateToDashboard) return onNavigateToDashboard();
+            }}
+          >
+            📊 Dashboard
+          </button>
+          <button
+            className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all font-semibold"
+            onClick={() => {
+              try { localStorage.removeItem('mpl_current_game'); } catch {}
+              setSelectedBatterIndex(null);
+              setSelectedBowlerIndex(null);
+              setLockedBattersA([]);
+              setLockedBattersB([]);
+              setPendingQuestionId(null);
+              if (onNewGame) return onNewGame();
+              if (window.confirm("Start a new game? This will reset teams and questions.")) {
+                window.location.reload();
+              }
+            }}
+          >
+            New Game
+          </button>
+          <button
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/80 transition-all font-semibold"
+            onClick={() => {
+              const newWindow = window.open(window.location.href, '_blank');
+              if (newWindow) {
+                toast({ title: "Parallel game opened", description: "Running another game in a new window!" });
+              }
+            }}
+          >
+            Open Parallel Game →
+          </button>
+        </div>
       </div>
       <Scoreboard
         teamAName={teamAName}
