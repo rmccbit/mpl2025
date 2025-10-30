@@ -256,6 +256,9 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         const newExtras = prev.extras + added;
         setPopup({ type: "extra", value: added, message: `Received ${result.extraType}` });
         setPendingQuestionId(null); // Clear pending question for extras
+        // Reset player selections for extras, just like regular questions
+        setSelectedBatterIndex(null);
+        setSelectedBowlerIndex(null);
         return { 
           ...prev, 
           runs: newRuns, 
