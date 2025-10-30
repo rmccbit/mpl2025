@@ -123,3 +123,85 @@ All colors MUST be HSL.
   word-break: break-word;
   overflow-wrap: anywhere;
 }
+
+/* Celebration animations */
+@keyframes confetti-fall {
+  0% { transform: translateY(-10%) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(110%) rotate(360deg); opacity: 0; }
+}
+
+.confetti-layer::before,
+.confetti-layer::after {
+  content: "";
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  background: repeating-linear-gradient(90deg,
+    #ff4757 0 8px,
+    #ffa502 8px 16px,
+    #2ed573 16px 24px,
+    #1e90ff 24px 32px,
+    #5352ed 32px 40px
+  );
+  height: 16px;
+  animation: confetti-fall 1.6s linear infinite;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+}
+.confetti-layer::after {
+  animation-duration: 2.2s;
+  opacity: 0.8;
+}
+
+@keyframes firework {
+  0% { transform: scale(0); opacity: 0; }
+  30% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.fireworks-layer {
+  pointer-events: none;
+}
+.fireworks-layer::before,
+.fireworks-layer::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow:
+    0 -30px 0 2px #ff4757,
+    26px -15px 0 2px #ffa502,
+    26px 15px 0 2px #2ed573,
+    0 30px 0 2px #1e90ff,
+    -26px 15px 0 2px #5352ed,
+    -26px -15px 0 2px #fffa65;
+  left: 50%; top: 40%;
+  transform: translate(-50%, -50%);
+  animation: firework 1.4s ease-out infinite;
+}
+.fireworks-layer::after {
+  top: 65%;
+  animation-delay: 0.4s;
+}
+
+@keyframes balloon-rise {
+  0% { transform: translateY(20%) scale(0.9); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-110%) scale(1); opacity: 0; }
+}
+.balloons-layer {
+  overflow: hidden;
+}
+.balloons-layer::before,
+.balloons-layer::after {
+  content: "";
+  position: absolute;
+  left: 15%; right: 15%; bottom: -10%; height: 40%;
+  background:
+    radial-gradient(circle at 20% 60%, #ff4757 0 40%, transparent 41%),
+    radial-gradient(circle at 50% 70%, #ffa502 0 40%, transparent 41%),
+    radial-gradient(circle at 80% 65%, #2ed573 0 40%, transparent 41%),
+    radial-gradient(circle at 35% 85%, #1e90ff 0 40%, transparent 41%),
+    radial-gradient(circle at 65% 90%, #5352ed 0 40%, transparent 41%);
+  animation: balloon-rise 5s ease-in-out infinite;
+}
+.balloons-layer::after { animation-delay: 1.2s; opacity: 0.8; }

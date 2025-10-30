@@ -15,7 +15,15 @@ interface Question {
 interface GameZoneProps {
   availableBalls: (Question | null)[];
   onBallSelect: (ballNumber: number) => void;
-  onAnswer: (result: { batterCorrect: boolean; bowlerCorrect?: boolean; runs: number }) => void;
+  onAnswer: (result: { 
+    batterCorrect?: boolean; 
+    bowlerCorrect?: boolean; 
+    runs?: number; 
+    isExtra?: boolean; 
+    extraType?: "wide" | "noball"; 
+    extraRuns?: number; 
+    questionId?: number;
+  }) => void;
   canSelectBall?: boolean;
   selectedBatterName?: string | null;
   selectedBowlerName?: string | null;
@@ -52,13 +60,7 @@ export const GameZone = ({ availableBalls, onBallSelect, onAnswer, canSelectBall
     if (!canSelectBall) return;
     // If this is an extra (wide or no-ball), auto-award 1 run, don't consume a legal ball, and don't open question UI
     if ((ball as any).type === "wide" || (ball as any).type === "noball") {
-      onAnswer({ batterCorrect: false, bowlerCorrect: false, runs: 0, ...( { } as any), } as any);
-      // Send explicit extra meta through a second call that GameScreen understands
-      // Consolidate in one call using isExtra fields
-      onAnswer({ batterCorrect: false, bowlerCorrect: false, runs: 0, } as any);
-      // Better: single call with extra flags
-      // But to avoid signature widening here, call once with the correct flags
-      // @ts-ignore
+      onBallSelect(ball.id);
       onAnswer({ isExtra: true, extraType: (ball as any).type, extraRuns: 1, questionId: ball.id });
       return;
     }

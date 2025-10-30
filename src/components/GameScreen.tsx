@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { GamePopup } from "./ui/game-popup";
 import { api, GameData } from "../services/api";
 import { QUESTIONS } from "../data/questions";
+import { CelebrationOverlay } from "./CelebrationOverlay";
 interface GameScreenProps {
   teamAName: string;
   teamBName: string;
@@ -104,6 +105,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
   const [lockedBattersB, setLockedBattersB] = useState<number[]>([]);
   const [popup, setPopup] = useState<{ type: "runs" | "wicket" | "dot" | "extra" | "winner"; value?: number; message?: string } | null>(null);
   const [pendingQuestionId, setPendingQuestionId] = useState<number | null>(null);
+  const [celebration, setCelebration] = useState<{ type: "four" | "six" | "win" | null; visible: boolean }>({ type: null, visible: false });
 
   const handleBallSelect = (ballNumber: number) => {
     if (selectedBowlerIndex === null || selectedBatterIndex === null) {
@@ -198,6 +200,9 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         // Batter scored runs
         newRuns += result.runs ?? 0;
         setPopup({ type: "runs", value: result.runs ?? 0, message: "Great shot!" });
+        if ((result.runs ?? 0) >= 4) {
+          setCelebration({ type: (result.runs ?? 0) >= 6 ? "six" : "four", visible: true });
+        }
       } else if (result.bowlerCorrect) {
         // Wicket!
         newWickets += 1;
@@ -211,6 +216,77 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
       } else {
         // Dot ball (both wrong)
         setPopup({ type: "dot", value: 0, message: "Both got it wrong!" });
+      }
+
+      // If wicket fell and all batters are now locked, end the innings/match immediately
+      if (result.bowlerCorrect) {
+        const numBatters = battingPlayersLocal.length;
+        const currentLocks = prev.battingTeam === "A" ? lockedBattersA : lockedBattersB;
+        const projectedLockCount = new Set([...(currentLocks || []), batterIndex]).size;
+
+        if (projectedLockCount >= numBatters) {
+          // All out condition reached
+          if (prev.innings === 1) {
+            const nextBatting = prev.battingTeam === "A" ? "B" : "A";
+            setPopup({ type: "extra", value: 0, message: `All out. End of innings 1. Target: ${newRuns + 1} runs.` });
+
+            const nextState = {
+              ...prev,
+              teamAScore: prev.battingTeam === "A" ? { runs: newRuns, wickets: newWickets, overs: newOvers } : prev.teamAScore ?? { runs: newRuns, wickets: newWickets, overs: newOvers },
+              innings: 2,
+              battingTeam: nextBatting,
+              runs: 0,
+              wickets: 0,
+              overs: 0,
+              balls: 0,
+              currentBatter: 0,
+              currentBowler: 10,
+              usedBalls: [],
+              ballDetails: [...prev.ballDetails, ballDetail],
+            } as GameState;
+            // Clear selections and locks when innings change
+            setSelectedBatterIndex(null);
+            setSelectedBowlerIndex(null);
+            setLockedBattersA([]);
+            setLockedBattersB([]);
+            setPendingQuestionId(null);
+            return nextState;
+          } else {
+            // Innings 2 all out -> end match and decide winner
+            const firstInningsRuns = prev.teamAScore ? prev.teamAScore.runs : 0;
+            const secondInningsRuns = newRuns;
+            let winnerName = "";
+            if (secondInningsRuns > firstInningsRuns) {
+              winnerName = prev.battingTeam === "A" ? teamAName : teamBName;
+            } else if (secondInningsRuns < firstInningsRuns) {
+              winnerName = prev.battingTeam === "A" ? teamBName : teamAName;
+            } else {
+              winnerName = "Tie";
+            }
+
+            setPopup({ type: "winner", value: 0, message: winnerName === "Tie" ? `The match is a tie.` : `${winnerName} won the match!` });
+            if (winnerName !== "Tie") {
+              setCelebration({ type: "win", visible: true });
+            }
+
+            const endState = {
+              ...prev,
+              runs: newRuns,
+              wickets: newWickets,
+              overs: newOvers,
+              balls: newBalls,
+              currentBatter: newBatter,
+              currentBowler: newBowler,
+              gameOver: true,
+              winner: winnerName,
+              ballDetails: [...prev.ballDetails, ballDetail],
+            } as GameState;
+            setSelectedBatterIndex(null);
+            setSelectedBowlerIndex(null);
+            setPendingQuestionId(null);
+            return endState;
+          }
+        }
       }
 
       // Manual selection mode: do not auto-rotate batter/bowler after delivery
@@ -266,6 +342,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         if (typeof target === "number" && newRuns >= target) {
           const winnerName = prev.battingTeam === "A" ? teamAName : teamBName;
           setPopup({ type: "winner", value: 0, message: `${winnerName} won by chasing the target!` });
+          setCelebration({ type: "win", visible: true });
           const endWinState = {
             ...prev,
             runs: newRuns,
@@ -300,6 +377,9 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           }
 
           setPopup({ type: "winner", value: 0, message: winnerName === "Tie" ? `The match is a tie.` : `${winnerName} won the match!` });
+          if (winnerName !== "Tie") {
+            setCelebration({ type: "win", visible: true });
+          }
 
           const endState = {
             ...prev,
@@ -436,6 +516,11 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
 
   return (
     <div className="min-h-screen bg-gradient-stadium p-4 animate-fade-in">
+      <CelebrationOverlay
+        type={celebration.type}
+        visible={celebration.visible}
+        onDone={() => setCelebration({ type: null, visible: false })}
+      />
       {popup && (
         <GamePopup
           type={popup.type}
@@ -494,7 +579,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           teamName={gameState.battingTeam === "A" ? teamAName : teamBName}
           players={battingTeamPlayers}
           color={gameState.battingTeam === "A" ? "team-a" : "team-b"}
-          currentPlayer={battingTeamPlayers.length > 0 ? gameState.currentBatter % battingTeamPlayers.length : 0}
+          currentPlayer={selectedBatterIndex ?? -1}
           role="batting"
           selectable
           selectedIndex={selectedBatterIndex}
@@ -528,7 +613,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           teamName={gameState.battingTeam === "A" ? teamBName : teamAName}
           players={bowlingTeamPlayers}
           color={gameState.battingTeam === "A" ? "team-b" : "team-a"}
-          currentPlayer={bowlingTeamPlayers.length > 0 ? gameState.currentBowler % bowlingTeamPlayers.length : 0}
+          currentPlayer={selectedBowlerIndex ?? -1}
           role="bowling"
           selectable
           selectedIndex={selectedBowlerIndex}
