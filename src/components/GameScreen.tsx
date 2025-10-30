@@ -148,7 +148,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
   const [lockedBattersB, setLockedBattersB] = useState<number[]>([]);
   const [popup, setPopup] = useState<{ type: "runs" | "wicket" | "dot" | "extra" | "winner"; value?: number; message?: string } | null>(null);
   const [pendingQuestionId, setPendingQuestionId] = useState<number | null>(null);
-  const [celebration, setCelebration] = useState<{ type: "four" | "six" | "win" | null; visible: boolean }>({ type: null, visible: false });
+  const [celebration, setCelebration] = useState<{ type: "four" | "six" | "win" | null; visible: boolean; winnerName?: string }>({ type: null, visible: false });
 
   // Show stage notification on mount
   useEffect(() => {
@@ -177,6 +177,17 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
       toast({ title: "Select Players", description: "Pick a bowler and a batter before selecting a ball." });
       return;
     }
+    
+    // Prevent selecting another question if one is already pending
+    if (pendingQuestionId !== null) {
+      toast({ 
+        title: "Question in Progress", 
+        description: "Please answer the current question first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setPendingQuestionId(ballNumber);
     setGameState(prev => ({
       ...prev,
@@ -244,6 +255,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         const newRuns = prev.runs + added;
         const newExtras = prev.extras + added;
         setPopup({ type: "extra", value: added, message: `Received ${result.extraType}` });
+        setPendingQuestionId(null); // Clear pending question for extras
         return { 
           ...prev, 
           runs: newRuns, 
@@ -337,7 +349,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
               setPopup({ type: "winner", value: 0, message: `The match is a tie.` });
             }
             if (winnerName !== "Tie") {
-              setCelebration({ type: "win", visible: true });
+              setCelebration({ type: "win", visible: true, winnerName });
             }
 
             const endState = {
@@ -413,7 +425,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         if (typeof target === "number" && newRuns >= target) {
           const winnerName = prev.battingTeam === "A" ? teamAName : teamBName;
           // Only celebration, no popup for win
-          setCelebration({ type: "win", visible: true });
+          setCelebration({ type: "win", visible: true, winnerName });
           const endWinState = {
             ...prev,
             runs: newRuns,
@@ -452,7 +464,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
             setPopup({ type: "winner", value: 0, message: `The match is a tie.` });
           }
           if (winnerName !== "Tie") {
-            setCelebration({ type: "win", visible: true });
+            setCelebration({ type: "win", visible: true, winnerName });
           }
 
           const endState = {
@@ -593,6 +605,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
       <CelebrationOverlay
         type={celebration.type}
         visible={celebration.visible}
+        winnerName={celebration.winnerName}
         onDone={() => setCelebration({ type: null, visible: false })}
       />
       {popup && (
@@ -694,7 +707,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           })()}
           onBallSelect={handleBallSelect}
           onAnswer={handleAnswer}
-          canSelectBall={selectedBowlerIndex !== null && selectedBatterIndex !== null && !gameState.gameOver}
+          canSelectBall={selectedBowlerIndex !== null && selectedBatterIndex !== null && !gameState.gameOver && pendingQuestionId === null}
           selectedBowlerName={(gameState.battingTeam === "A" ? teamBPlayers : teamAPlayers)[selectedBowlerIndex ?? -1]}
           selectedBatterName={(gameState.battingTeam === "A" ? teamAPlayers : teamBPlayers)[selectedBatterIndex ?? -1]}
         />

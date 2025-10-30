@@ -8,12 +8,14 @@ interface CelebrationOverlayProps {
   type: "four" | "six" | "win" | null;
   visible: boolean;
   onDone: () => void;
+  winnerName?: string;
 }
 
 export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
   type,
   visible,
   onDone,
+  winnerName,
 }) => {
   const [showText, setShowText] = useState(false);
 
@@ -141,8 +143,8 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
       case "win":
         return {
           icon: <Trophy className="w-44 h-44" />,
-          title: "CHAMPIONS!",
-          subtitle: "Victory is yours!",
+          title: winnerName || "CHAMPIONS!",
+          subtitle: winnerName ? "WINS THE MATCH!" : "Victory is yours!",
           emoji: "🏆",
           gradient: "from-yellow-300 via-amber-400 to-orange-400",
           bgGradient: "from-yellow-500/20 via-amber-500/20 to-orange-500/20",
@@ -320,7 +322,11 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className={`relative text-8xl md:text-[10rem] font-black bg-gradient-to-r ${content.gradient} bg-clip-text text-transparent`}
+                className={`relative ${
+                  type === "win" && winnerName 
+                    ? "text-6xl md:text-8xl lg:text-9xl" 
+                    : "text-8xl md:text-[10rem]"
+                } font-black bg-gradient-to-r ${content.gradient} bg-clip-text text-transparent`}
                 style={{
                   textShadow: "0 0 40px rgba(255,255,255,0.7), 0 0 80px rgba(255,255,255,0.4)",
                   WebkitTextStroke: "3px rgba(255,255,255,0.4)",
