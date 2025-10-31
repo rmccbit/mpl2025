@@ -22,26 +22,26 @@ export const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
   // Tournament stage credentials
   const STAGE_CREDENTIALS = {
     group: {
-      username: "group",
-      password: "group123",
+      username: "rmc2025_group",
+      password: "rmc2025@group",
       name: "Group Stage",
       icon: "🏁",
     },
     playoffs: {
-      username: "playoffs",
-      password: "playoffs123",
+      username: "rmc2025_playoffs",
+      password: "rmc2025@playoffs",
       name: "Playoffs",
       icon: "⚔️",
     },
     semifinals: {
-      username: "semifinals",
-      password: "semi123",
+      username: "rmc2025_semifinals",
+      password: "rmc2025@semifinals",
       name: "Semi-Finals",
       icon: "🔥",
     },
     finals: {
-      username: "finals",
-      password: "finals123",
+      username: "rmc2025_finals",
+      password: "rmc2025@finals",
       name: "Finals",
       icon: "🏆",
     },
@@ -49,8 +49,8 @@ export const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
 
   // Default organizer credentials
   const ORGANIZER_CREDENTIALS = {
-    username: "organizer",
-    password: "admin123",
+    username: "rmc2025_organizer",
+    password: "rmc2025@admin",
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -288,7 +288,7 @@ export const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
                     <Zap className="w-4 h-4 text-green-400" />
                     <p className="font-mono text-xs text-green-300 font-semibold">🏁 Group</p>
                   </div>
-                  <p className="font-mono text-[11px] text-green-200/80">group / group123</p>
+                  <p className="font-mono text-[11px] text-green-200/80">rmc2025_group / rmc2025@group</p>
                 </motion.div>
 
                 <motion.div 
@@ -308,7 +308,7 @@ export const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
                     <Swords className="w-4 h-4 text-blue-400" />
                     <p className="font-mono text-xs text-blue-300 font-semibold">⚔️ Playoffs</p>
                   </div>
-                  <p className="font-mono text-[11px] text-blue-200/80">playoffs / playoffs123</p>
+                  <p className="font-mono text-[11px] text-blue-200/80">rmc2025_playoffs / rmc2025@playoffs</p>
                 </motion.div>
 
                 <motion.div 
@@ -328,7 +328,7 @@ export const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
                     <Flame className="w-4 h-4 text-orange-400" />
                     <p className="font-mono text-xs text-orange-300 font-semibold">🔥 Semi-Finals</p>
                   </div>
-                  <p className="font-mono text-[11px] text-orange-200/80">semifinals / semi123</p>
+                  <p className="font-mono text-[11px] text-orange-200/80">rmc2025_semifinals / rmc2025@semifinals</p>
                 </motion.div>
 
                 <motion.div 
@@ -348,7 +348,7 @@ export const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
                     <Trophy className="w-4 h-4 text-yellow-400" />
                     <p className="font-mono text-xs text-yellow-300 font-semibold">🏆 Finals</p>
                   </div>
-                  <p className="font-mono text-[11px] text-yellow-200/80">finals / finals123</p>
+                  <p className="font-mono text-[11px] text-yellow-200/80">rmc2025_finals / rmc2025@finals</p>
                 </motion.div>
               </div>
 
@@ -359,7 +359,7 @@ export const AuthScreen = ({ onAuthSuccess }: AuthScreenProps) => {
                 <div className="flex items-center justify-center gap-2">
                   <Shield className="w-4 h-4 text-purple-400" />
                   <p className="font-mono text-xs text-purple-300">
-                    <span className="font-semibold">Organizer:</span> organizer / admin123
+                    <span className="font-semibold">Organizer:</span> rmc2025_organizer / rmc2025@admin
                   </p>
                 </div>
               </motion.div>

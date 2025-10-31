@@ -29,31 +29,26 @@ The Mathematics Premier League now features a complete tournament stage system w
 ## Tournament Stages
 
 ### 1. 🏁 **Group Stage**
-- **Credentials:** `group` / `group123`
 - **Questions:** 1-13
 - **Badge Color:** Green
 - **Purpose:** Initial qualifying round with fundamental concepts
 
 ### 2. ⚔️ **Playoffs**
-- **Credentials:** `playoffs` / `playoffs123`
 - **Questions:** 14-26
 - **Badge Color:** Blue
 - **Purpose:** Elimination round with progressive difficulty
 
 ### 3. 🔥 **Semi-Finals**
-- **Credentials:** `semifinals` / `semi123`
 - **Questions:** 27-39
 - **Badge Color:** Orange
 - **Purpose:** Top 4 teams compete with challenging problems
 
 ### 4. 🏆 **Finals**
-- **Credentials:** `finals` / `finals123`
 - **Questions:** 40-52
 - **Badge Color:** Yellow
 - **Purpose:** Championship match with comprehensive coverage
 
 ### 5. 👑 **Organizer Access**
-- **Credentials:** `organizer` / `admin123`
 - **Purpose:** Full system access for managing tournaments
 - **Note:** Independent of tournament stages
 
@@ -96,15 +91,15 @@ The Mathematics Premier League now features a complete tournament stage system w
 │  (AuthScreen)   │
 └────────┬────────┘
          │
-         ├─► organizer/admin123 ────► Full Access
+         ├─► organizer ────► Full Access
          │
-         ├─► group/group123 ────────► Group Stage
+         ├─► group ────────► Group Stage
          │
-         ├─► playoffs/playoffs123 ──► Playoffs
+         ├─► playoffs ──► Playoffs
          │
-         ├─► semifinals/semi123 ────► Semi-Finals
+         ├─► semifinals/────► Semi-Finals
          │
-         └─► finals/finals123 ──────► Finals
+         └─► finals ──────► Finals
                  │
                  ▼
          ┌─────────────┐
@@ -347,7 +342,7 @@ Index.tsx
 
 #### **Scenario 1: Group Stage Complete Flow**
 1. Navigate to application
-2. Login: `group` / `group123`
+2. Login: `rmc2025_group` / `rmc2025@group`
 3. Verify green "🏁 Group Stage" badge appears
 4. Setup Team A and Team B
 5. Complete toss
@@ -389,7 +384,6 @@ Index.tsx
 **Expected Result:** ✅ Session persists, no re-login required
 
 #### **Scenario 4: Organizer Access**
-1. Login: `organizer` / `admin123`
 2. Verify full dashboard access
 3. Start new game
 4. Verify can access all features

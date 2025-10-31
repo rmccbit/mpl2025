@@ -8,12 +8,6 @@
 - **Added**: Detailed logging and error handling
 - **Result**: All games now properly saved to MongoDB with complete data
 
-### ✅ Added Authentication System
-- **Login Screen**: Professional login interface
-- **Roles**: Organizer (admin) and Players
-- **Credentials**:
-  - Organizer: `organizer` / `admin123`
-  - Player: `guest` (any password) or custom username
 - **Session Management**: Persists login state across page reloads
 
 ### ✅ Professional Dashboard
@@ -52,10 +46,6 @@ npm run dev
 
 ### 4. Login
 - Visit: `http://localhost:5173`
-- Use credentials:
-  - **Organizer**: `organizer` / `admin123`
-  - **Player**: `guest` (any password)
-
 ### 5. Use Dashboard
 - View all game statistics
 - See complete game history
@@ -98,16 +88,7 @@ Each game shows:
 - Can see game history
 - Can start new games
 
-### Default Credentials
-```
-Organizer:
-  Username: organizer
-  Password: admin123
 
-Player:
-  Username: guest
-  Password: (any)
-```
 
 ## 💾 Database Storage
 

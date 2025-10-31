@@ -21,16 +21,16 @@ npm install
 
 ### 2. Configure Environment Variables
 
-Create a `.env` file in the `backend` folder:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your MongoDB connection string:
+Create a `.env` file in the `backend` folder and paste your MongoDB connection string:
 
 ```env
+# MongoDB Atlas example
+# MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<db>?retryWrites=true&w=majority
+
+# Local fallback example
 MONGODB_URI=mongodb://localhost:27017/mpl_games
+
+# Server config
 PORT=3000
 NODE_ENV=development
 ```
