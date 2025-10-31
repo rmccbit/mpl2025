@@ -33,7 +33,8 @@ export interface GameData {
   }>;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/games";
+// Hardcode deployed backend URL, keep env override for flexibility
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://mpl2025.onrender.com/api/games";
 
 export const api = {
   async saveGame(gameData: GameData): Promise<GameData> {
