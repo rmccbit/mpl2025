@@ -88,7 +88,8 @@ const IntroAnimation = ({ onComplete }: { onComplete?: () => void }) => {
             transition={{
               duration: 2,
               delay: 2.8,
-              type: "spring",
+              type: "tween",
+              ease: [0.34, 1.56, 0.64, 1],
             }}
           >
             MPL 2025

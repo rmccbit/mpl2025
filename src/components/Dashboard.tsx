@@ -66,6 +66,20 @@ export const Dashboard = ({ onBack, onStartGame }: DashboardProps) => {
     }
   };
 
+  const getTeamInningsTimeSeconds = (game: GameData, teamName: string): number | null => {
+    if (!game.ballDetails || game.ballDetails.length === 0) return null;
+    const teamBalls = game.ballDetails.filter(b => b.batterTeam === teamName && b.timestamp);
+    if (teamBalls.length === 0) return null;
+    const times = teamBalls
+      .map(b => new Date(b.timestamp).getTime())
+      .filter(t => !isNaN(t));
+    if (times.length === 0) return null;
+    const minT = Math.min(...times);
+    const maxT = Math.max(...times);
+    if (!isFinite(minT) || !isFinite(maxT) || maxT < minT) return null;
+    return Math.round((maxT - minT) / 1000);
+  };
+
   const exportData = () => {
     const dataStr = JSON.stringify(games, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -379,11 +393,23 @@ export const Dashboard = ({ onBack, onStartGame }: DashboardProps) => {
                               <p className="font-black text-indigo-600 text-lg">
                                 {game.teamA.score ? `${game.teamA.score.runs}/${game.teamA.score.wickets}` : 'N/A'}
                               </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {(() => {
+                                  const secs = getTeamInningsTimeSeconds(game, game.teamA.name);
+                                  return typeof secs === 'number' ? `${secs}s` : '';
+                                })()}
+                              </p>
                             </div>
                             <div className="bg-card/50 p-3 rounded-lg backdrop-blur-sm border border-violet-500/30">
                               <p className="text-xs text-muted-foreground mb-1 font-semibold">Team B</p>
                               <p className="font-black text-violet-600 text-lg">
                                 {game.teamB.score ? `${game.teamB.score.runs}/${game.teamB.score.wickets}` : 'N/A'}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {(() => {
+                                  const secs = getTeamInningsTimeSeconds(game, game.teamB.name);
+                                  return typeof secs === 'number' ? `${secs}s` : '';
+                                })()}
                               </p>
                             </div>
                           </div>
