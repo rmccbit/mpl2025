@@ -60,17 +60,17 @@ export const QUESTIONS: Question[] = [
 
   
   // PLAYOFFS
-  { id: 31, text: "If a batsman maintains a strike rate of 150 for 30 balls, how many runs has he scored?", choices: ["40", "45", "50", "60"], correctIndex: 3, runs: 2, stage: "playoffs" },
+  { id: 31, text: "If a batsman maintains a strike rate of 150 for 30 balls, how many runs has he scored?", choices: ["40", "45", "50", "60"], correctIndex: 1, runs: 2, stage: "playoffs" },
 
-  { id: 32, text: "A bowler concedes 45 runs in 5 overs. How many dot balls did he bowl if he gave only singles otherwise?", choices: ["15", "20", "25", "30"], correctIndex: 1, runs: 2, stage: "playoffs" },
+  { id: 32, text: "A bowler concedes 45 runs in 10 overs. How many dot balls did he bowl if he gave only singles otherwise?", choices: ["15", "20", "25", "30"], correctIndex: 0, runs: 2, stage: "playoffs" },
 
-  { id: 33, text: "A team needs 100 runs from 10 overs. If they score 45 in the first 5, what’s the required run rate now?", choices: ["9", "10", "11", "11.5"], correctIndex: 1, runs: 2, stage: "playoffs" },
+  { id: 33, text: "A team needs 100 runs from 10 overs. If they score 45 in the first 5, what’s the required run rate now?", choices: ["9", "10", "11", "11.5"], correctIndex: 2, runs: 2, stage: "playoffs" },
 
   { id: 34, text: "The range R of a projectile is given by R = (u² sin(2θ)) / g. If R = 80 m and u = 40 m/s, find θ.", choices: ["22.5°", "30°", "37°", "45°"], correctIndex: 0, runs: 4, stage: "playoffs" },
 
-  { id: 35, text: "A cricketer’s average after 9 innings is 45. After the 10th innings, his average becomes 46. How many runs did he score in the 10th?", choices: ["50", "55", "60", "65"], correctIndex: 2, runs: 4, stage: "playoffs" },
+  { id: 35, text: "A cricketer’s average after 9 innings is 45. After the 10th innings, his average becomes 46. How many runs did he score in the 10th?", choices: ["50", "55", "60", "65"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
-  { id: 36, text: "If a bowler’s strike rate is 18 balls per wicket, how many overs does he need to take 4 wickets?", choices: ["10.8", "12.0", "11.2", "9.6"], correctIndex: 0, runs: 4, stage: "playoffs" },
+  { id: 36, text: "If a bowler’s strike rate is 18 balls per wicket, how many overs does he need to take 4 wickets?", choices: ["10.8", "12.0", "11.2", "9.6"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
   { id: 37, text: "A batsman’s score pattern: 10, 20, 40, 80. If this doubles pattern continues, what will be his next score?", choices: ["100", "120", "160", "200"], correctIndex: 2, runs: 4, stage: "playoffs" },
 
@@ -78,19 +78,19 @@ export const QUESTIONS: Question[] = [
 
   { id: 39, text: "A batsman scores 60, 70, 80, 50 in 4 innings. What score is needed in the 5th innings to average 70?", choices: ["60", "65", "70", "75"], correctIndex: 1, runs: 2, stage: "playoffs" },
 
-  { id: 40, text: "A batsman hits 10 boundaries and 3 sixes in a 60-ball innings. What percentage of runs came from boundaries?", choices: ["50%", "60%", "65%", "70%"], correctIndex: 2, runs: 6, stage: "playoffs" },
+  { id: 40, text: "A batsman hits 5 fours and 5 sixes in a 60-ball innings. What percentage of runs came from fours?", choices: ["40%", "50%", "60%", "65%"], correctIndex: 2, runs: 6, stage: "playoffs" },
 
-  { id: 41, text: "A team’s required run rate increases by 0.5 every over. If it started at 8, what’s the RRR after 4 overs?", choices: ["9.5", "10", "10.5", "11"], correctIndex: 0, runs: 4, stage: "playoffs" },
+  { id: 41, text: "A team’s required run rate increases by 0.5 every over. If it started at 8, what’s the RRR after 4 overs?", choices: ["9.5", "10", "10.5", "11"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
-  { id: 42, text: "A cricket ball is projected at 45° with speed 20 m/s. Find maximum height (g = 10 m/s²).", choices: ["5 m", "8 m", "10 m", "12 m"], correctIndex: 1, runs: 4, stage: "playoffs" },
+  { id: 42, text: "A cricket ball is projected at 45° with speed 20 m/s. Find maximum height (g = 10 m/s²).", choices: ["5 m", "8 m", "10 m", "12 m"], correctIndex: 2, runs: 4, stage: "playoffs" },
 
-  { id: 43, text: "The probability of a batsman hitting a six is 0.1. In 10 balls, what’s the expected number of sixes?", choices: ["0", "1", "2", "3"], correctIndex: 1, runs: 4, stage: "playoffs" },
+  { id: 43, text: "The probability of a batsman hitting a six is 0.1. In 20 balls, what’s the expected number of sixes?", choices: ["0", "1", "2", "3"], correctIndex: 2, runs: 4, stage: "playoffs" },
 
-  { id: 44, text: "Team needs 30 runs from 12 balls. If they hit 2 sixes and 1 four, how many runs still needed?", choices: ["12", "14", "16", "18"], correctIndex: 2, runs: 2, stage: "playoffs" },
+  { id: 44, text: "Team needs 30 runs from 12 balls. If they hit 2 sixes and 1 four, how many runs still needed?", choices: ["12", "14", "16", "18"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
   { id: 45, text: "The line joining midpoints of two sides of a triangle is:", choices: ["Equal to base", "Parallel to base", "Perpendicular to base", "None"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
-  { id: 46, text: "If Team A scores 240 in 40 overs and Team B scores 180 in 30 overs, which has the better run rate?", choices: ["Team A", "Team B", "Equal", "Cannot determine"], correctIndex: 0, runs: 2, stage: "playoffs" },
+  { id: 46, text: "If Team A scores 240 in 40 overs and Team B scores 180 in 30 overs, which has the better run rate?", choices: ["Team A", "Team B", "Equal", "Cannot determine"], correctIndex: 2, runs: 2, stage: "playoffs" },
 
   { id: 47, text: "A player’s strike rate is 200. How many runs did he score from 12 balls?", choices: ["20", "22", "24", "26"], correctIndex: 2, runs: 2, stage: "playoffs" },
 
@@ -98,7 +98,7 @@ export const QUESTIONS: Question[] = [
 
   { id: 49, text: "If 4 wickets fell in 8 overs, what’s the average wickets per over?", choices: ["0.25", "0.5", "0.75", "1"], correctIndex: 1, runs: 1, stage: "playoffs" },
 
-  { id: 50, text: "A batsman scores 72 runs with 12 boundaries. What percent of runs came from boundaries?", choices: ["50%", "60%", "65%", "70%"], correctIndex: 1, runs: 4, stage: "playoffs" },
+  { id: 50, text: "A batter scores 60 runs with 12 runs from boundaries. What percent of runs came from boundaries?", choices: ["10%", "20%", "25%", "30%"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
   { id: 51, text: "If Team A’s total run rate after 10 overs is 8.5, what’s their total runs scored?", choices: ["75", "80", "85", "90"], correctIndex: 2, runs: 2, stage: "playoffs" },
 
@@ -116,42 +116,9 @@ export const QUESTIONS: Question[] = [
 
   { id: 58, text: "In probability, the chance of hitting a six is 1/10. What’s the probability of not hitting a six in one ball?", choices: ["0.1", "0.8", "0.9", "0.95"], correctIndex: 2, runs: 2, stage: "playoffs" },
 
-  { id: 59, text: "A team scores 320/8 in 50 overs. What’s the run rate?", choices: ["6.2", "6.3", "6.4", "6.5"], correctIndex: 1, runs: 4, stage: "playoffs" },
+  { id: 59, text: "A team scores 320/8 in 50 overs. What’s the run rate?", choices: ["6.2", "6.3", "6.4", "6.5"], correctIndex: 2, runs: 4, stage: "playoffs" },
 
-  { id: 60, text: "If Team A scores 10% more than Team B’s 180 runs, how much did Team A score?", choices: ["190", "195", "198", "200"], correctIndex: 1, runs: 2, stage: "playoffs" },
-
-    
-  // SEMIFINALS
-  { id: 61, text: "In a T20 match, Team A scored 184 runs for 4 wickets in 20 overs. While chasing, Team B reached 46 runs for 1 wicket in 5 overs, but play was stopped due to rain and no further play was possible. Who is declared the winner?", choices: ["Team A", "Team B", "Draw", "No Result"], correctIndex: 3, runs: 1, stage: "semifinals" },
-  { id: 62, text: "Two batsmen scored equal runs. The number of balls faced by each is the positive root of the equations: A1: x² − 47x − 150 = 0, A2: x² − 55x − 300 = 0. Who is the Man of the Match?", choices: ["A1", "A2", "Both", "Cannot be determined"], correctIndex: 0, runs: 1, stage: "semifinals" },
-  { id: 63, text: "If two batsmen Shikhar Dhawan and David Warner have a partnership ratio of 5/3:5/4. Both together scored 210 runs. Find who has scored more runs and by how much?", choices: ["Shikhar Dhawan, 30", "David Andrew Warner, 30", "David Andrew Warner, 40", "Shikhar Dhawan, 40"], correctIndex: 0, runs: 2, stage: "semifinals" },
-  { id: 64, text: "SKY has scored 10 runs in the first 10 balls. After 20 balls, his strike rate is 250. How many runs did he score in the last 10 balls?", choices: ["36", "45", "40", "63"], correctIndex: 2, runs: 2, stage: "playoffs" },
-  { id: 65, text: "A batsman scores 35, 42, 58, and 65 runs in his first four innings. If he wants a strike rate of 120 after 50 balls in total and he faced 20, 18, 25, and 22 balls respectively in the first four innings, how many runs should he score in the 5th innings if he faces 15 balls?", choices: ["40", "42", "44", "46"], correctIndex: 1, runs: 2, stage: "semifinals" },
-  { id: 66, text: "Two batsmen, A and B, share a partnership of 180 runs. If A scores 20% more than B, find their individual scores.", choices: ["A: 100, B: 80", "A: 108, B: 72", "A: 110, B: 70", "A: 120, B: 60"], correctIndex: 1, runs: 2, stage: "semifinals" },
-  { id: 67, text: "A batsman scored 0, 45, 63, 72 in the last four innings. Find the minimum runs in the 5th innings so that average is at least 50.", choices: ["69", "70", "71", "72"], correctIndex: 1, runs: 4, stage: "semifinals" },
-  { id: 68, text: "Player X scores 80 runs at strike rate 160. Player Y faces 50% more balls than Player X but has a strike rate of 120. Who scores more runs and by how much?", choices: ["Player X by 10 runs", "Player Y by 10 runs", "Player Y by 20 runs", "Player X by 20 runs"], correctIndex: 1, runs: 4, stage: "semifinals" },
-  { id: 69, text: "A batsman’s batting average after 24 innings is 41. He scores 15 runs in the 25th innings. What is the batting average after 25 innings?", choices: ["40", "39.90", "39.96", "None"], correctIndex: 2, runs: 4, stage: "semifinals" },
-  { id: 70, text: "A batsman scores 50, 62, 70, 80, and 90 runs in 5 innings. If his next innings is 120 runs, what will be his new batting average?", choices: ["78.67", "77.00", "76.40", "75.60"], correctIndex: 0, runs: 4, stage: "semifinals" },
-  { id: 71, text: "In a T20 match, Player X bowls 4 overs at an economy of 6.5, and Player Y bowls 5 overs at an economy of 7.2. Who concedes more runs and by how much?", choices: ["Player X, 1 run more", "Player Y, 1 run more", "Player Y, 0.5 runs more", "Player X, 0.5 runs more"], correctIndex: 1, runs: 4, stage: "semifinals" },
-  { id: 72, text: "The number of wickets taken by bowler A is [44i⁴ + 23i²] and that by bowler B is [12i⁶ + 42i⁸]. Who took more wickets?", choices: ["Bowler A", "Bowler B", "Both have equal wickets", "None of the above"], correctIndex: 1, runs: 6, stage: "semifinals" },
-  { id: 73, text: "In the first 6 overs (Powerplay), a team scores at 8 runs per over without losing a wicket. For the next 9 overs, they accelerate to 10 runs per over but lose 4 wickets. How many runs do they have at the end of 15 overs, and what is their run rate?", choices: ["138, 9", "136, 9.2", "138, 9.2", "136, 9"], correctIndex: 2, runs: 6, stage: "semifinals" },
-  { id: 74, text: "A cricket ball is projected from point A on the pitch at a certain velocity and angle such that it describes a parabolic arc reaching maximum height h and lands at point B on the boundary field. If the pitch is represented as a line segment AB on the x-axis, and the ball's path is modeled by a quadratic function y = −ax² + bx + c, how can you find the coordinates of the highest point of the ball's path? Calculate h if the vertex is at x = b/2a.", choices: ["h = c − (b²)/2a", "h = c + (b²)/2a", "h = c + (b²)/4a", "h = c − (b²)/4a"], correctIndex: 2, runs: 6, stage: "semifinals" },
-  { id: 75, text: "A bowler has a bowling average given by the function A(n) = 15 + 0.5n, where n is the number of matches played. If he has played 12 matches, what is his average?", choices: ["20", "21", "22", "23"], correctIndex: 1, runs: 6, stage: "semifinals" },
-  { id: 76, text: "The cricket ground boundary can be approximated by a 3D elliptical paraboloid described by z = 4 − (x²/16) − (y²/9). Calculate the volume of the region above ground level (i.e. where z ≥ 0) within this boundary.", choices: ["48π", "64π", "96π", "128π"], correctIndex: 2, runs: 1, stage: "semifinals" },
-  { id: 77, text: "A batsman has a strike rate of 120 after 40 balls. He wants to increase his overall strike rate to 150 by the time he faces 60 balls. What must his strike rate be for the next 20 balls?", choices: ["210", "200", "220", "None"], correctIndex: 0, runs: 1, stage: "semifinals" },
-  { id: 78, text: "A batsman must hit a six on the last ball to win. The ball must cover 102.4 meters at a 45° angle with g = 10 m/s². What is minimum velocity needed?", choices: ["30 m/s", "32 m/s", "64 m/s", "60 m/s"], correctIndex: 1, runs: 2, stage: "semifinals" },
-  { id: 79, text: "In a T20 match, Team X’s average run rate for the first 10 overs was 7.5. To finish with an overall average run rate of 9 runs per over, what should be their average run rate in the remaining 10 overs?", choices: ["10.5", "10.8", "11.0", "11.5"], correctIndex: 2, runs: 2, stage: "semifinals" },
-  { id: 80, text: "A batsman faces 60 balls and scores 72 runs at a strike rate of 120. He then faces 30 more balls and wants to raise his strike rate to 150. How many runs should he score in the next 30 balls?", choices: ["63", "66", "68", "70"], correctIndex: 1, runs: 2, stage: "semifinals" },
-  { id: 81, text: "Team Y scores 80 runs in 10 overs. To reach a total of 180 runs in 20 overs, what run rate should they maintain in the remaining overs?", choices: ["9", "10", "11", "12"], correctIndex: 1, runs: 2, stage: "semifinals" },
-  { id: 82, text: "A cricket ball is rolled toward wickets 22 yards apart, with the diameter of the ball 3 inches and wicket width 8 inches. If the ball rolls in a straight line, within what angle does the ball's direction lie (relative to the center line) to avoid missing the wickets?", choices: ["±0.30°", "±0.18°", "±0.45°", "±0.60°"], correctIndex: 1, runs: 4, stage: "semifinals" },
-  { id: 83, text: "A ball hit by a batsman moves on the ground towards boundary point P along segment RP. The fielder at Q runs along QP to intercept. If triangle PQS is isosceles with PQ = PS = SR, find the magnitude of angle QPR.", choices: ["36°", "42°", "54°", "84°"], correctIndex: 0, runs: 4, stage: "semifinals" },
-  { id: 84, text: "Runs scored by Team A and Team B are values of solutions [f(7)] and [g(7)] of differential equations: dy/dx = 6x + 7, with y(0) = 13, and dy/dx = 4x + 9, with y(1) = 54. Find the winning team and margin.", choices: ["Team B won by 5 runs", "Team A won by 5 runs", "Team B won by 6 runs", "Team A won by 6 runs"], correctIndex: 1, runs: 4, stage: "semifinals" },
-  { id: 85, text: "A batsman hits 4, 8, 15, 16, and 23 runs in the first 5 balls of an over. What is his average run per ball in this over?", choices: ["11.2", "12.0", "13.2", "14.0"], correctIndex: 0, runs: 4, stage: "semifinals" },
-  { id: 86, text: "A cricket team has scores modeled by the function f(x) = 5x² + 2x + 10, where x = overs bowled. What is the total score at the end of 6 overs?", choices: ["250", "262", "274", "286"], correctIndex: 1, runs: 4, stage: "semifinals" },
-  { id: 87, text: "Team A: Coefficient of x⁵ in (1 + x)⁷. Team B: Coefficient of x⁴ in (3 + x)⁶. Who won?", choices: ["Team B won by 114 runs", "Team A won by 114 runs", "Team B won by 57 runs", "Team A won by 57 runs"], correctIndex: 0, runs: 6, stage: "semifinals" },
-  { id: 88, text: "From a pool of 27 players (13 batsmen including 2 keepers, 3 all-rounders, and the rest bowlers), how many ways can you form a team of 11 players with 1 keeper, 3 bowlers, 2 all-rounders, 6 batsmen (including the keeper)?", choices: ["456,120", "457,380", "458,640", "460,000"], correctIndex: 1, runs: 6, stage: "semifinals" },
-  { id: 89, text: "Team A won the toss and chose to bat, scored 264. Team B has scored 55 runs in 30 balls. Find current run rate (CRR) and required run rate (RRR).", choices: ["CRR 10, RRR 14", "CRR 11, RRR 14", "CRR 11, RRR 13", "CRR 10, RRR 13"], correctIndex: 1, runs: 6, stage: "semifinals" },
-  { id: 90, text: "A fielder throws a ball from the boundary to the stumps. If his velocity is 20 m/s at an angle of 30° and the distance is 40 m, will he hit the stumps? Take g = 10 m/s².", choices: ["Yes", "No", "Only if he throws higher", "Cannot determine"], correctIndex: 1, runs: 6, stage: "semifinals" },
+  { id: 60, text: "If Team A scores 10% more than Team B’s 180 runs, how much did Team A score?", choices: ["190", "195", "198", "200"], correctIndex: 2, runs: 2, stage: "playoffs" },
 
   
   // FINALS
