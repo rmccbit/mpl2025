@@ -76,7 +76,7 @@ export const QUESTIONS: Question[] = [
 
   { id: 38, text: "In coordinate geometry, the midpoint between (2, 3) and (8, 9) is:", choices: ["(4, 5)", "(5, 6)", "(6, 7)", "(7, 8)"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
-  { id: 39, text: "If a player’s economy rate improves from 9.6 to 8.0 after one match, what does it indicate?", choices: ["He bowled fewer overs", "He bowled better", "He conceded more runs", "No change"], correctIndex: 1, runs: 2, stage: "playoffs" },
+  { id: 39, text: "A batsman scores 60, 70, 80, 50 in 4 innings. What score is needed in the 5th innings to average 70?", choices: ["60", "65", "70", "75"], correctIndex: 1, runs: 2, stage: "playoffs" },
 
   { id: 40, text: "A batsman hits 10 boundaries and 3 sixes in a 60-ball innings. What percentage of runs came from boundaries?", choices: ["50%", "60%", "65%", "70%"], correctIndex: 2, runs: 6, stage: "playoffs" },
 
