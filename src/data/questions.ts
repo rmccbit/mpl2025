@@ -65,7 +65,7 @@ export const QUESTIONS: Question[] = [
   { id: 42, text: "A batsman hits 5 fours and 5 sixes in a 60-ball innings. What percentage of runs came from fours?", choices: ["40%", "50%", "60%", "65%"], correctIndex: 0, runs: 6, stage: "playoffs" },
   { id: 43, text: "The equation of a circle with center (2,3) and radius 5 is:", choices: ["(x−2)²+(y−3)²=25", "(x+2)²+(y+3)²=25", "(x−2)²+(y−3)²=5", "(x+2)²+(y+3)²=5"], correctIndex: 0, runs: 6, stage: "playoffs" },
   { id: 44, text: "If a cricket field is circular with a boundary radius of 70 m, find its area.", choices: ["14,000 m²", "15,000 m²", "15,400 m²", "16,000 m²"], correctIndex: 2, runs: 6, stage: "playoffs" },
-  { id: 45, text: "Team A bats first scoring 180. Team B scores 170 in 20 overs. If a bonus point is given for winning with a run rate > 1.1× opponent, do they get it?", choices: ["Yes", "No", "Tie", "Invalid"], correctIndex: 1, runs: 6, stage: "group" },
+  { id: 45, text: "Team A bats first scoring 180. Team B scores 170 in 20 overs. If a bonus point is given for winning with a run rate > 1.1× opponent, do they get it?", choices: ["Yes", "No", "Tie", "Invalid"], correctIndex: 1, runs: 6, stage: "playoffs" },
 
   // 🏏 SECOND INNINGS
   // 🏃‍♂️ 1-RUN QUESTIONS
@@ -83,7 +83,7 @@ export const QUESTIONS: Question[] = [
   { id: 53, text: "If a ball is thrown vertically upward with velocity 20 m/s, find time to reach maximum height (g = 10 m/s²).", choices: ["1 s", "2 s", "3 s", "4 s"], correctIndex: 1, runs: 4, stage: "playoffs" },
   { id: 54, text: "A player takes 5 wickets giving 40 runs. What’s his bowling average?", choices: ["6", "7", "8", "9"], correctIndex: 2, runs: 4, stage: "playoffs" },
   { id: 55, text: "A batter scores 60 runs with 12 runs from boundaries. What percent of runs came from boundaries?", choices: ["10%", "20%", "25%", "30%"], correctIndex: 1, runs: 4, stage: "playoffs" },
-  { id: 56, text: "A bowler takes 3, 4, 5, 2 wickets in 4 matches. What is the average wickets per match?", choices: ["3.0", "3.5", "4.0", "4.5"], correctIndex: 1, runs: 4, stage: "group" },
+  { id: 56, text: "A bowler takes 3, 4, 5, 2 wickets in 4 matches. What is the average wickets per match?", choices: ["3.0", "3.5", "4.0", "4.5"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
   // 🚀 6-RUN QUESTIONS
   { id: 57, text: "A team’s required run rate increases by 0.5 every over. If it started at 8, what’s the RRR after 4 overs?", choices: ["9.5", "10", "10.5", "11"], correctIndex: 1, runs: 6, stage: "playoffs" },
