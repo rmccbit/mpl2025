@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { GamePopup } from "./ui/game-popup";
 import { api, GameData } from "../services/api";
 import { QUESTIONS } from "../data/questions";
-import { CelebrationOverlay } from "./CelebrationOverlay";
+import { CelebrationOverlay } from "./CelebrationOverlay.tsx";
 import { TournamentStage } from "./AuthScreen";
 import { LayoutDashboard, History, RefreshCw, Zap } from "lucide-react";
 
@@ -61,28 +61,74 @@ const getUserStage = (): TournamentStage => {
     const authData = sessionStorage.getItem("mpl_auth");
     if (authData) {
       const parsed = JSON.parse(authData);
+      const stage = parsed.stage;
+      if (stage && ["group", "playoffs", "semifinals", "finals"].includes(stage)) {
+        console.log("User stage detected:", stage);
+        return stage as TournamentStage;
+      }
       // If organizer or no stage specified, default to group stage
-      return parsed.stage || "group";
+      console.warn("No valid stage found in auth data, defaulting to group");
+      return "group";
     }
   } catch (error) {
     console.error("Error parsing auth data:", error);
   }
+  console.warn("No auth data found, defaulting to group stage");
   return "group"; // Default to group stage
 };
 
 // Create two distinct 15-question pools so innings 1 and innings 2 use different questions
 // Filter by tournament stage
 const generatePools = (stage: TournamentStage) => {
+  console.log(`Generating question pools for stage: ${stage}`);
+  
   // Filter questions by stage
   const stageQuestions = QUESTIONS.filter(q => q.stage === stage);
   
+  console.log(`Found ${stageQuestions.length} questions for stage ${stage}`);
+  
   if (stageQuestions.length < 30) {
-    console.warn(`Not enough questions for stage ${stage}. Found ${stageQuestions.length}, need at least 30.`);
-    // Fall back to all questions if not enough stage-specific questions
-    const all = [...QUESTIONS];
-    const shuffled = all.sort(() => Math.random() - 0.5);
-    const first = shuffled.slice(0, 15).map((q, idx) => ({ ...q, id: idx + 1 }));
-    const second = shuffled.slice(15, 30).map((q, idx) => ({ ...q, id: idx + 16 }));
+    console.error(`ERROR: Not enough questions for stage ${stage}. Found ${stageQuestions.length}, need at least 30.`);
+    console.error(`This will cause the wrong questions to be used!`);
+    
+    // Use what we have, pad with available questions if needed
+    if (stageQuestions.length === 0) {
+      console.error("No questions found for stage, this is a critical error!");
+      // Last resort: use group stage questions
+      const fallbackQuestions = QUESTIONS.filter(q => q.stage === "group");
+      const first15 = fallbackQuestions.slice(0, 15).sort(() => Math.random() - 0.5);
+      const next15 = fallbackQuestions.slice(15, 30).sort(() => Math.random() - 0.5);
+      
+      const first = first15.map((q, idx) => ({ ...q, id: idx + 1 }));
+      const second = next15.map((q, idx) => ({ ...q, id: idx + 16 }));
+      
+      const markExtras = (pool: any[]) => {
+        const indices = Array.from({ length: pool.length }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 3);
+        if (indices.length >= 3) {
+          pool[indices[0]].type = "wide";
+          pool[indices[1]].type = "wide";
+          pool[indices[2]].type = "noball";
+          pool[indices[0]].runs = 0;
+          pool[indices[1]].runs = 0;
+          pool[indices[2]].runs = 0;
+        }
+      };
+      
+      markExtras(first);
+      markExtras(second);
+      return { first, second };
+    }
+    
+    // Use available stage questions, repeat if needed to get to 30
+    const available = [...stageQuestions];
+    while (available.length < 30) {
+      available.push(...stageQuestions);
+    }
+    const first15 = available.slice(0, 15).sort(() => Math.random() - 0.5);
+    const next15 = available.slice(15, 30).sort(() => Math.random() - 0.5);
+    
+    const first = first15.map((q, idx) => ({ ...q, id: idx + 1 }));
+    const second = next15.map((q, idx) => ({ ...q, id: idx + 16 }));
     
     const markExtras = (pool: any[]) => {
       const indices = Array.from({ length: pool.length }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 3);
@@ -101,9 +147,15 @@ const generatePools = (stage: TournamentStage) => {
     return { first, second };
   }
   
-  const shuffled = stageQuestions.sort(() => Math.random() - 0.5);
-  const first = shuffled.slice(0, 15).map((q, idx) => ({ ...q, id: idx + 1 }));
-  const second = shuffled.slice(15, 30).map((q, idx) => ({ ...q, id: idx + 16 }));
+  // Shuffle first 15 questions separately for innings 1
+  const first15 = stageQuestions.slice(0, 15).sort(() => Math.random() - 0.5);
+  // Shuffle next 15 questions separately for innings 2
+  const next15 = stageQuestions.slice(15, 30).sort(() => Math.random() - 0.5);
+  
+  console.log(`Using questions 1-15 for innings 1, 16-30 for innings 2 (from ${stage} stage)`);
+  
+  const first = first15.map((q, idx) => ({ ...q, id: idx + 1 }));
+  const second = next15.map((q, idx) => ({ ...q, id: idx + 16 }));
 
   // Mark exactly 3 random balls in each pool as extras: 2 wides and 1 no-ball
   const markExtras = (pool: any[]) => {
