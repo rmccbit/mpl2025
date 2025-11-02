@@ -62,7 +62,7 @@ export const QUESTIONS: Question[] = [
   { id: 41, text: "In coordinate geometry, the midpoint between (2, 3) and (8, 9) is:", choices: ["(4, 5)", "(5, 6)", "(6, 7)", "(7, 8)"], correctIndex: 1, runs: 4, stage: "playoffs" },
 
   // 🚀 6-RUN QUESTIONS
-  { id: 42, text: "A batsman hits 5 fours and 5 sixes in a 60-ball innings. What percentage of runs came from fours?", choices: ["40%", "50%", "60%", "65%"], correctIndex: 2, runs: 6, stage: "playoffs" },
+  { id: 42, text: "A batsman hits 5 fours and 5 sixes in a 60-ball innings. What percentage of runs came from fours?", choices: ["40%", "50%", "60%", "65%"], correctIndex: 0, runs: 6, stage: "playoffs" },
   { id: 43, text: "The equation of a circle with center (2,3) and radius 5 is:", choices: ["(x−2)²+(y−3)²=25", "(x+2)²+(y+3)²=25", "(x−2)²+(y−3)²=5", "(x+2)²+(y+3)²=5"], correctIndex: 0, runs: 6, stage: "playoffs" },
   { id: 44, text: "If a cricket field is circular with a boundary radius of 70 m, find its area.", choices: ["14,000 m²", "15,000 m²", "15,400 m²", "16,000 m²"], correctIndex: 2, runs: 6, stage: "playoffs" },
   { id: 45, text: "Team A bats first scoring 180. Team B scores 170 in 20 overs. If a bonus point is given for winning with a run rate > 1.1× opponent, do they get it?", choices: ["Yes", "No", "Tie", "Invalid"], correctIndex: 1, runs: 6, stage: "group" },
