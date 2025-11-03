@@ -139,8 +139,7 @@ export const GameZone = ({ availableBalls, onBallSelect, onAnswer, canSelectBall
           </div>
         )}
         <div className="grid grid-cols-5 gap-5">
-          {Array.from({ length: 15 }, (_, i) => {
-            const ball = availableBalls[i];
+          {availableBalls.map((ball, i) => {
             const isAvailable = ball !== null;
             return (
               <motion.div

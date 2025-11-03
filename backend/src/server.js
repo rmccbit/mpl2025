@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB
-connectDB();
+// connectDB();
 
 // Routes
 app.use('/api/games', gameRoutes);

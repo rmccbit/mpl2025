@@ -77,18 +77,24 @@ const getUserStage = (): TournamentStage => {
   return "group"; // Default to group stage
 };
 
-// Create two distinct 15-question pools so innings 1 and innings 2 use different questions
+// Create two distinct question pools so innings 1 and innings 2 use different questions
+// For finals: 20 questions per innings (40 total), 15 balls can be selected
+// For other stages: 15 questions per innings (30 total), 10 balls can be selected
 // Filter by tournament stage
 const generatePools = (stage: TournamentStage) => {
   console.log(`Generating question pools for stage: ${stage}`);
+  
+  // Determine pool size based on stage
+  const poolSize = stage === "finals" ? 20 : 15;
+  const requiredTotal = poolSize * 2;
   
   // Filter questions by stage
   const stageQuestions = QUESTIONS.filter(q => q.stage === stage);
   
   console.log(`Found ${stageQuestions.length} questions for stage ${stage}`);
   
-  if (stageQuestions.length < 30) {
-    console.error(`ERROR: Not enough questions for stage ${stage}. Found ${stageQuestions.length}, need at least 30.`);
+  if (stageQuestions.length < requiredTotal) {
+    console.error(`ERROR: Not enough questions for stage ${stage}. Found ${stageQuestions.length}, need at least ${requiredTotal}.`);
     console.error(`This will cause the wrong questions to be used!`);
     
     // Use what we have, pad with available questions if needed
@@ -96,11 +102,11 @@ const generatePools = (stage: TournamentStage) => {
       console.error("No questions found for stage, this is a critical error!");
       // Last resort: use group stage questions
       const fallbackQuestions = QUESTIONS.filter(q => q.stage === "group");
-      const first15 = fallbackQuestions.slice(0, 15).sort(() => Math.random() - 0.5);
-      const next15 = fallbackQuestions.slice(15, 30).sort(() => Math.random() - 0.5);
+      const firstPool = fallbackQuestions.slice(0, poolSize).sort(() => Math.random() - 0.5);
+      const nextPool = fallbackQuestions.slice(poolSize, requiredTotal).sort(() => Math.random() - 0.5);
       
-      const first = first15.map((q, idx) => ({ ...q, id: idx + 1 }));
-      const second = next15.map((q, idx) => ({ ...q, id: idx + 16 }));
+      const first = firstPool.map((q, idx) => ({ ...q, id: idx + 1 }));
+      const second = nextPool.map((q, idx) => ({ ...q, id: idx + poolSize + 1 }));
       
       const markExtras = (pool: any[]) => {
         const indices = Array.from({ length: pool.length }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 3);
@@ -119,16 +125,16 @@ const generatePools = (stage: TournamentStage) => {
       return { first, second };
     }
     
-    // Use available stage questions, repeat if needed to get to 30
+    // Use available stage questions, repeat if needed to get to required total
     const available = [...stageQuestions];
-    while (available.length < 30) {
+    while (available.length < requiredTotal) {
       available.push(...stageQuestions);
     }
-    const first15 = available.slice(0, 15).sort(() => Math.random() - 0.5);
-    const next15 = available.slice(15, 30).sort(() => Math.random() - 0.5);
+    const firstPool = available.slice(0, poolSize).sort(() => Math.random() - 0.5);
+    const nextPool = available.slice(poolSize, requiredTotal).sort(() => Math.random() - 0.5);
     
-    const first = first15.map((q, idx) => ({ ...q, id: idx + 1 }));
-    const second = next15.map((q, idx) => ({ ...q, id: idx + 16 }));
+    const first = firstPool.map((q, idx) => ({ ...q, id: idx + 1 }));
+    const second = nextPool.map((q, idx) => ({ ...q, id: idx + poolSize + 1 }));
     
     const markExtras = (pool: any[]) => {
       const indices = Array.from({ length: pool.length }, (_, i) => i).sort(() => Math.random() - 0.5).slice(0, 3);
@@ -147,15 +153,15 @@ const generatePools = (stage: TournamentStage) => {
     return { first, second };
   }
   
-  // Shuffle first 15 questions separately for innings 1
-  const first15 = stageQuestions.slice(0, 15).sort(() => Math.random() - 0.5);
-  // Shuffle next 15 questions separately for innings 2
-  const next15 = stageQuestions.slice(15, 30).sort(() => Math.random() - 0.5);
+  // Shuffle first pool of questions for innings 1
+  const firstPool = stageQuestions.slice(0, poolSize).sort(() => Math.random() - 0.5);
+  // Shuffle next pool of questions for innings 2
+  const nextPool = stageQuestions.slice(poolSize, requiredTotal).sort(() => Math.random() - 0.5);
   
-  console.log(`Using questions 1-15 for innings 1, 16-30 for innings 2 (from ${stage} stage)`);
+  console.log(`Using questions 1-${poolSize} for innings 1, ${poolSize + 1}-${requiredTotal} for innings 2 (from ${stage} stage)`);
   
-  const first = first15.map((q, idx) => ({ ...q, id: idx + 1 }));
-  const second = next15.map((q, idx) => ({ ...q, id: idx + 16 }));
+  const first = firstPool.map((q, idx) => ({ ...q, id: idx + 1 }));
+  const second = nextPool.map((q, idx) => ({ ...q, id: idx + poolSize + 1 }));
 
   // Mark exactly 3 random balls in each pool as extras: 2 wides and 1 no-ball
   const markExtras = (pool: any[]) => {
@@ -202,7 +208,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
   const [lockedBattersB, setLockedBattersB] = useState<number[]>([]);
   const [popup, setPopup] = useState<{ type: "runs" | "wicket" | "dot" | "extra" | "winner"; value?: number; message?: string } | null>(null);
   const [pendingQuestionId, setPendingQuestionId] = useState<number | null>(null);
-  const [celebration, setCelebration] = useState<{ type: "four" | "six" | "win" | null; visible: boolean; winnerName?: string }>({ type: null, visible: false });
+  const [celebration, setCelebration] = useState<{ type: "four" | "six" | "win" | null; visible: boolean; winnerName?: string; winningTeam?: "A" | "B" }>({ type: null, visible: false });
 
   // Show stage notification on mount
   useEffect(() => {
@@ -406,7 +412,8 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
               setPopup({ type: "winner", value: 0, message: `The match is a tie.` });
             }
             if (winnerName !== "Tie") {
-              setCelebration({ type: "win", visible: true, winnerName });
+              const winningTeam = winnerName === teamAName ? "A" : "B";
+              setCelebration({ type: "win", visible: true, winnerName, winningTeam });
             }
 
             const endState = {
@@ -433,8 +440,8 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
       newBatter = prev.currentBatter;
       newBowler = prev.currentBowler;
 
-      // Check innings boundaries: 10 balls per innings
-      const BALLS_PER_INNINGS = 10;
+      // Check innings boundaries: 15 balls per innings for finals, 10 balls for other stages
+      const BALLS_PER_INNINGS = userStage === "finals" ? 15 : 10;
 
       // If currently in innings 1 and we've completed the allotted balls, end innings 1
       if (prev.innings === 1 && newBalls >= BALLS_PER_INNINGS) {
@@ -460,7 +467,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           balls: 0,
           currentBatter: 0,
           currentBowler: 10,
-          // reset usedBalls so all 15 questions are available again for innings 2
+          // reset usedBalls so all questions are available again for innings 2 (20 for finals, 15 for other stages)
           usedBalls: [],
           // Keep ball details
           ballDetails: [...prev.ballDetails, ballDetail],
@@ -481,8 +488,9 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         // Early chase success
         if (typeof target === "number" && newRuns >= target) {
           const winnerName = prev.battingTeam === "A" ? teamAName : teamBName;
+          const winningTeam = winnerName === teamAName ? "A" : "B";
           // Only celebration, no popup for win
-          setCelebration({ type: "win", visible: true, winnerName });
+          setCelebration({ type: "win", visible: true, winnerName, winningTeam });
           const endWinState = {
             ...prev,
             runs: newRuns,
@@ -521,7 +529,8 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
             setPopup({ type: "winner", value: 0, message: `The match is a tie.` });
           }
           if (winnerName !== "Tie") {
-            setCelebration({ type: "win", visible: true, winnerName });
+            const winningTeam = winnerName === teamAName ? "A" : "B";
+            setCelebration({ type: "win", visible: true, winnerName, winningTeam });
           }
 
           const endState = {
@@ -664,6 +673,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         type={celebration.type}
         visible={celebration.visible}
         winnerName={celebration.winnerName}
+        winningTeam={celebration.winningTeam}
         onDone={() => setCelebration({ type: null, visible: false })}
       />
       {popup && (
@@ -693,7 +703,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
           {/* Action Buttons */}
           <div className="flex gap-2 flex-wrap justify-end">
             <button
-              className="px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 text-white hover:from-amber-600 hover:to-yellow-600 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-2"
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-2"
               onClick={() => {
                 if (onNavigateToDashboard) return onNavigateToDashboard();
               }}
@@ -702,7 +712,7 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
               <span className="hidden sm:inline">Dashboard</span>
             </button>
             <button
-              className="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-2"
+              className="px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg flex items-center gap-2"
               onClick={() => {
                 if (onNavigateToHistory) return onNavigateToHistory();
               }}
@@ -775,8 +785,32 @@ export const GameScreen = ({ teamAName, teamBName, teamAPlayers, teamBPlayers, b
         <GameZone
           availableBalls={((): (typeof QUESTIONS[number] | null)[] => {
             const pool = gameState.innings === 1 ? questionPools.first : questionPools.second;
-            // create 15 slots; if a question from pool is used, slot becomes null
-            return pool.map(q => (gameState.usedBalls.includes(q.id) ? null : q));
+            // Create slots for all questions in pool (20 for finals, 15 for other stages)
+            // If a question is used, slot becomes null
+            const availableBalls = pool.map(q => (gameState.usedBalls.includes(q.id) ? null : q));
+            
+            // For finals: Override first 5 selected balls to have boundaries (4 or 6 runs)
+            if (userStage === "finals") {
+              // Count how many non-extra balls have been used so far in this innings
+              const ballsUsedThisInnings = gameState.usedBalls.filter(ballId => {
+                const question = pool.find(q => q.id === ballId);
+                return question && (question as any).type !== "wide" && (question as any).type !== "noball";
+              }).length;
+              
+              // If less than 5 non-extra balls have been used, override runs for available balls
+              if (ballsUsedThisInnings < 5) {
+                return availableBalls.map(ball => {
+                  if (ball && (ball as any).type !== "wide" && (ball as any).type !== "noball") {
+                    // Override runs to be randomly 4 or 6 for boundaries
+                    const boundaryRuns = Math.random() < 0.5 ? 4 : 6;
+                    return { ...ball, runs: boundaryRuns };
+                  }
+                  return ball;
+                });
+              }
+            }
+            
+            return availableBalls;
           })()}
           onBallSelect={handleBallSelect}
           onAnswer={handleAnswer}

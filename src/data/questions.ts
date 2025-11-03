@@ -26,6 +26,7 @@ export const QUESTIONS: Question[] = [
   { id: 13, text: "Two opening batsmen, A and B, play independently. In any match A scores 50+ with probability 0.40, B scores 50+ with probability 0.30, and the events are independent. What is the probability that exactly one of them scores 50+ in a given match?", choices: ["0.12", "0.58", "0.46", "0.70"], correctIndex: 2, runs: 6, stage: "group" },
   { id: 14, text: "A batsman scores runs across 5 consecutive overs in a geometric progression. The total runs over those 5 overs is 155. If the common ratio is 2, what were his runs per over (from first to fifth)?", choices: ["3,6,12,24,48", "4,8,16,32,64", "5,10,20,40,80", "6,12,24,48,96"], correctIndex: 2, runs: 6, stage: "group" },
   { id: 15, text: "A batsman’s scores in 8 matches are: 40, 50, 60, 70, 80, 30, 90, 100. What is his standard deviation of scores?", choices: ["21.5", "22.5", "23.5", "24.5"], correctIndex: 1, runs: 6, stage: "group" },
+  //Second Innings 
   { id: 16, text: "If a bowler bowls 18 balls, how many overs has he bowled?", choices: ["2 overs", "2.3 overs", "3 overs", "3.3 overs"], correctIndex: 2, runs: 1, stage: "group" },
   { id: 17, text: "If a batsman scores 36 runs in 12 balls, what is his strike rate?", choices: ["200", "300", "150", "180"], correctIndex: 1, runs: 1, stage: "group" },
   { id: 18, text: "A cricket innings lasts 20 overs. After 15 overs, 90 balls have been bowled. How many balls are left to be bowled?", choices: ["18", "24", "30", "36"], correctIndex: 2, runs: 2, stage: "group" },
@@ -155,5 +156,15 @@ export const QUESTIONS: Question[] = [
   { id: 117, text: "In an IPL match, Kohli and Maxwell have a partnership of 150 runs. Kohli scores runs in the ratio of 3:2 compared to Maxwell. Later, Kohli hits a six off a no-ball, which adds 7 runs to his score. Find Kohli’s new percentage of total partnership.", choices: ["61%", "62%", "63%", "65%"], correctIndex: 1, runs: 6, stage: "finals" },
   { id: 118, text: "Given team R wants to gain 0.5 Net Run Rate after the match. Now team R and team A are matched for a T20 match and team A set a target of 150. Then find the number of overs in which the match has to be finished.", choices: ["18.70", "18.75", "18.85", "None"], correctIndex: 1, runs: 6, stage: "finals" },
   { id: 119, text: "Before his last match, Suresh's average score was 54. In his last match, he scored 60 runs which increased his average to 55. What runs must he score in his next match to increase his average to 56?", choices: ["56", "62", "70", "68"], correctIndex: 1, runs: 6, stage: "finals" },
-  { id: 120, text: "A player’s average after 12 innings is 48. He scores 72 in the 13th innings. What is his new average?", choices: ["50", "49", "51", "52"], correctIndex: 0, runs: 6, stage: "finals" }
+  { id: 120, text: "A player's average after 12 innings is 48. He scores 72 in the 13th innings. What is his new average?", choices: ["50", "49", "51", "52"], correctIndex: 0, runs: 6, stage: "finals" },
+  { id: 121, text: "A team needs 48 runs from 24 balls. What is the required run rate?", choices: ["10", "11", "12", "13"], correctIndex: 2, runs: 1, stage: "finals" },
+  { id: 122, text: "If a batsman scores 36 runs off 30 balls, what is his strike rate?", choices: ["110", "115", "120", "125"], correctIndex: 2, runs: 1, stage: "finals" },
+  { id: 123, text: "A bowler takes 4 wickets in 8 overs. What is his strike rate (balls per wicket)?", choices: ["10", "11", "12", "13"], correctIndex: 2, runs: 2, stage: "finals" },
+  { id: 124, text: "In a match, Team A scores 180 and Team B scores 175. What is the winning margin?", choices: ["3 runs", "4 runs", "5 runs", "6 runs"], correctIndex: 2, runs: 2, stage: "finals" },
+  { id: 125, text: "A batsman's scores in 4 innings are 45, 55, 65, 75. What is his average?", choices: ["55", "58", "60", "62"], correctIndex: 2, runs: 2, stage: "finals" },
+  { id: 126, text: "If a team scores at 9 runs per over for 15 overs, how many runs have they scored?", choices: ["125", "130", "135", "140"], correctIndex: 2, runs: 2, stage: "finals" },
+  { id: 127, text: "A bowler concedes 42 runs in 7 overs. What is his economy rate?", choices: ["5.5", "6.0", "6.5", "7.0"], correctIndex: 1, runs: 4, stage: "finals" },
+  { id: 128, text: "Team needs 84 runs in 12 overs with 6 wickets remaining. What is the required run rate?", choices: ["6", "6.5", "7", "7.5"], correctIndex: 2, runs: 4, stage: "finals" },
+  { id: 129, text: "A batsman hits 8 fours and 3 sixes and scores 68 runs. How many runs came from running between wickets?", choices: ["18", "20", "22", "24"], correctIndex: 1, runs: 4, stage: "finals" },
+  { id: 130, text: "If the first 10 overs yielded 65 runs, what should be the run rate for the next 10 overs to reach 185 total?", choices: ["11", "11.5", "12", "12.5"], correctIndex: 2, runs: 4, stage: "finals" }
 ];

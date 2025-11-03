@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Zap, Star, Sparkles } from "lucide-react";
+import { Trophy, Zap, Star, Sparkles, Crown } from "lucide-react";
 
 interface CelebrationOverlayProps {
   type: "four" | "six" | "win" | null;
   visible: boolean;
   onDone: () => void;
   winnerName?: string;
+  winningTeam?: "A" | "B"; // Which team won (A = Blue, B = Orange)
 }
 
 export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
@@ -16,6 +17,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
   visible,
   onDone,
   winnerName,
+  winningTeam,
 }) => {
   const [showText, setShowText] = useState(false);
 
@@ -23,52 +25,55 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
     if (!visible || !type) return;
 
     const fireConfetti = () => {
-      const duration = type === "win" ? 2500 : 2000;
+      const duration = 3000; // 3 seconds for all celebrations
       const end = Date.now() + duration;
       
+      // Team-specific colors for win celebration
       const colors = type === "win" 
-        ? ["#FFD700", "#FFA500", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4"]
+        ? winningTeam === "A"
+          ? ["#3B82F6", "#60A5FA", "#93C5FD", "#DBEAFE", "#1D4ED8"] // Blue shades for Team A
+          : ["#F97316", "#FB923C", "#FDBA74", "#FED7AA", "#EA580C"] // Orange shades for Team B
         : type === "six"
         ? ["#FF0000", "#FF4500", "#FFD700", "#FFA500"]
         : ["#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"];
 
       (function frame() {
         confetti({
-          particleCount: type === "win" ? 7 : 4,
+          particleCount: type === "win" ? 3 : 4, // Reduced particles for win
           angle: 60,
           spread: type === "win" ? 130 : 110,
           origin: { x: 0 },
           colors,
-          gravity: type === "win" ? 0.7 : 0.9,
-          scalar: type === "win" ? 1.4 : 1.1,
-          ticks: 300,
+          gravity: type === "win" ? 0.5 : 0.9, // Slower fall for win
+          scalar: type === "win" ? 0.9 : 1.1, // Smaller particles for win
+          ticks: type === "win" ? 400 : 300, // Longer lasting for win
           shapes: ['circle', 'square'],
-          drift: type === "win" ? 0.2 : 0,
+          drift: type === "win" ? 0.3 : 0,
         });
         confetti({
-          particleCount: type === "win" ? 7 : 4,
+          particleCount: type === "win" ? 3 : 4, // Reduced particles for win
           angle: 120,
           spread: type === "win" ? 130 : 110,
           origin: { x: 1 },
           colors,
-          gravity: type === "win" ? 0.7 : 0.9,
-          scalar: type === "win" ? 1.4 : 1.1,
-          ticks: 300,
+          gravity: type === "win" ? 0.5 : 0.9,
+          scalar: type === "win" ? 0.9 : 1.1,
+          ticks: type === "win" ? 400 : 300,
           shapes: ['circle', 'square'],
-          drift: type === "win" ? -0.2 : 0,
+          drift: type === "win" ? -0.3 : 0,
         });
         
-        // Extra center burst for win
-        if (type === "win" && Math.random() > 0.6) {
+        // Extra center burst for win - more dramatic but fewer particles
+        if (type === "win" && Math.random() > 0.7) { // Less frequent bursts
           confetti({
-            particleCount: 15,
+            particleCount: 8, // Reduced from 15
             angle: 90,
             spread: 360,
             origin: { x: 0.5, y: 0.4 },
             colors,
-            gravity: 0.4,
-            scalar: 1.8,
-            ticks: 400,
+            gravity: 0.3, // Even slower for dramatic effect
+            scalar: 1.2, // Smaller particles
+            ticks: 500,
           });
         }
 
@@ -89,15 +94,16 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
       })();
     };
 
-    // Play appropriate sound
-    const soundMap: Record<string, string> = {
-      four: "/sounds/four.mp3",
-      six: "/sounds/six.mp3",
-      win: "/sounds/ipl_win.mp3",
-    };
-
-    const audio = new Audio(soundMap[type]);
+    // Play the same sound for all celebrations (only first 3 seconds)
+    const audio = new Audio("/sounds/IPL Ringtone 2023.mp3");
     audio.play().catch(() => {});
+    
+    // Stop audio after 3 seconds
+    const audioTimer = setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }, 3000);
+    
     fireConfetti();
     
     // Show text after a short delay for dramatic effect
@@ -106,10 +112,12 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
     const timer = setTimeout(() => {
       setShowText(false);
       setTimeout(onDone, 400);
-    }, type === "win" ? 2500 : 2000);
+    }, 3000); // 3 seconds for all celebrations
     
     return () => {
       clearTimeout(timer);
+      clearTimeout(audioTimer);
+      audio.pause();
       setShowText(false);
     };
   }, [visible, type, onDone]);
@@ -145,11 +153,19 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
           icon: <Trophy className="w-44 h-44" />,
           title: winnerName || "CHAMPIONS!",
           subtitle: winnerName ? "WINS THE MATCH!" : "Victory is yours!",
-          emoji: "🏆",
-          gradient: "from-yellow-300 via-amber-400 to-orange-400",
-          bgGradient: "from-yellow-500/20 via-amber-500/20 to-orange-500/20",
-          glow: "shadow-[0_0_150px_rgba(251,191,36,1)]",
-          ringColor: "rgba(251,191,36,0.8)",
+          emoji: "",
+          gradient: winningTeam === "A" 
+            ? "from-blue-400 via-blue-500 to-blue-600" // Blue gradient for Team A
+            : "from-orange-400 via-orange-500 to-orange-600", // Orange gradient for Team B
+          bgGradient: winningTeam === "A"
+            ? "from-blue-500/20 via-blue-600/20 to-blue-700/20"
+            : "from-orange-500/20 via-orange-600/20 to-orange-700/20",
+          glow: winningTeam === "A"
+            ? "shadow-[0_0_150px_rgba(59,130,246,1)]" // Blue glow
+            : "shadow-[0_0_150px_rgba(249,115,22,1)]", // Orange glow
+          ringColor: winningTeam === "A"
+            ? "rgba(59,130,246,0.8)"
+            : "rgba(249,115,22,0.8)",
         };
       default:
         return null;
@@ -169,23 +185,51 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-black/80 via-black/70 to-black/80 backdrop-blur-md z-50"
         >
-          {/* Animated background gradient orbs */}
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{ 
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className={`absolute inset-0 bg-gradient-to-br ${content.bgGradient} blur-3xl`}
-          />
+          {/* Different background animation for win vs others */}
+          {type === "win" ? (
+            // Win celebration: Multiple rotating gradient layers
+            <>
+              <motion.div
+                animate={{ 
+                  rotate: [0, 360],
+                  scale: [1, 1.3, 1],
+                }}
+                transition={{ 
+                  rotate: { duration: 8, repeat: Infinity, ease: "linear" },
+                  scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className={`absolute inset-0 bg-gradient-to-br ${content.bgGradient} blur-3xl opacity-60`}
+              />
+              <motion.div
+                animate={{ 
+                  rotate: [360, 0],
+                  scale: [1.2, 1, 1.2],
+                }}
+                transition={{ 
+                  rotate: { duration: 10, repeat: Infinity, ease: "linear" },
+                  scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className={`absolute inset-0 bg-gradient-to-tl ${content.bgGradient} blur-3xl opacity-50`}
+              />
+            </>
+          ) : (
+            // Regular celebration: Simple pulsing background
+            <motion.div
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.5, 0.3],
+              }}
+              transition={{ 
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className={`absolute inset-0 bg-gradient-to-br ${content.bgGradient} blur-3xl`}
+            />
+          )}
 
           <motion.div
-            initial={{ scale: 0, rotate: -180, opacity: 0 }}
+            initial={{ scale: 0, rotate: type === "win" ? 0 : -180, opacity: 0 }}
             animate={{ 
               scale: 1,
               rotate: 0,
@@ -195,7 +239,10 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
               scale: 0.8,
               opacity: 0,
             }}
-            transition={{ 
+            transition={type === "win" ? {
+              scale: { type: "spring", stiffness: 100, damping: 10, duration: 0.8 },
+              opacity: { duration: 0.4 },
+            } : {
               type: "spring",
               stiffness: 200,
               damping: 20,
@@ -203,175 +250,201 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
             }}
             className="relative flex flex-col items-center gap-8 z-10"
           >
-            {/* Floating particles effect */}
-            {[...Array(12)].map((_, i) => (
+            {/* Win celebration: Simplified floating sparkles */}
+            {type === "win" && [...Array(8)].map((_, i) => (
               <motion.div
                 key={i}
-                initial={{ scale: 0, opacity: 0 }}
+                initial={{ scale: 0, opacity: 0, x: 0, y: 0 }}
                 animate={{ 
-                  scale: [0, 1, 0],
-                  opacity: [0, 0.8, 0],
-                  x: [0, Math.cos(i * Math.PI / 6) * 150, Math.cos(i * Math.PI / 6) * 250],
-                  y: [0, Math.sin(i * Math.PI / 6) * 150, Math.sin(i * Math.PI / 6) * 250],
+                  scale: [0, 1.5, 1, 0],
+                  opacity: [0, 1, 0.8, 0],
+                  x: Math.cos(i * Math.PI / 4) * 200,
+                  y: Math.sin(i * Math.PI / 4) * 200,
                 }}
                 transition={{ 
-                  duration: 2.5,
+                  duration: 2,
                   repeat: Infinity,
-                  delay: i * 0.15,
+                  delay: i * 0.2,
                   ease: "easeOut",
                 }}
                 className="absolute"
               >
-                <Sparkles className="w-6 h-6 text-white" />
+                <Star className="w-5 h-5 text-white fill-white" />
               </motion.div>
             ))}
 
-            {/* Animated Icon with pulsing glow */}
+            {/* Trophy/Icon - New win animation style */}
             <motion.div
-              animate={{ 
+              animate={type === "win" ? {
+                y: [0, -20, 0],
+                rotate: [0, -5, 5, -5, 0],
+              } : { 
                 scale: [1, 1.15, 1],
-                rotate: type === "win" ? [0, -8, 8, 0] : [0, -5, 5, 0],
+                rotate: [0, -5, 5, 0],
               }}
-              transition={{ 
-                duration: type === "win" ? 1.2 : 0.8,
+              transition={type === "win" ? {
+                y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                rotate: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+              } : { 
+                duration: 0.8,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
               className="relative"
             >
-              {/* Glowing backdrop */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{ 
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className={`absolute inset-0 bg-gradient-to-br ${content.gradient} blur-2xl rounded-full ${content.glow}`}
-              />
-              
-              {/* Icon container with emoji */}
-              <div className="relative">
+              {/* Animated glow rings for win */}
+              {type === "win" && [...Array(3)].map((_, i) => (
                 <motion.div
-                  className={`text-white ${content.glow} relative z-10`}
-                  style={{
-                    filter: 'drop-shadow(0 10px 30px rgba(255,255,255,0.4))',
-                  }}
-                >
-                  {content.icon}
-                </motion.div>
-                
-                {/* Emoji badge */}
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
+                  key={i}
+                  initial={{ scale: 1, opacity: 0.8 }}
                   animate={{ 
-                    scale: 1,
-                    rotate: 0,
+                    scale: [1, 2.5, 3],
+                    opacity: [0.8, 0.3, 0],
                   }}
                   transition={{ 
-                    delay: 0.3,
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 15,
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.6,
+                    ease: "easeOut",
                   }}
-                  className="absolute -bottom-3 -right-3 text-5xl"
-                  style={{
-                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
-                  }}
-                >
-                  {content.emoji}
-                </motion.div>
-              </div>
+                  className={`absolute inset-0 rounded-full border-4 ${content.glow}`}
+                  style={{ borderColor: content.ringColor }}
+                />
+              ))}
+              
+              {/* Icon with dramatic glow */}
+              <motion.div
+                animate={type === "win" ? {
+                  filter: [
+                    'drop-shadow(0 0 20px rgba(255,255,255,0.8))',
+                    'drop-shadow(0 0 40px rgba(255,255,255,1))',
+                    'drop-shadow(0 0 20px rgba(255,255,255,0.8))',
+                  ]
+                } : {}}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className={`text-white relative z-10`}
+              >
+                {content.icon}
+              </motion.div>
+              
+              {/* Emoji badge with bounce */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  delay: 0.3,
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 10,
+                }}
+                className="absolute -bottom-4 -right-4 text-6xl"
+              >
+                {content.emoji}
+              </motion.div>
             </motion.div>
 
-            {/* Main Title with enhanced styling */}
+            {/* Title with completely new animation for win */}
             <motion.div
-              initial={{ y: 50, opacity: 0 }}
+              initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ 
                 delay: 0.2, 
-                duration: 0.5,
-                type: "spring",
-                stiffness: 150,
+                type: type === "win" ? "spring" : "spring",
+                stiffness: type === "win" ? 80 : 150,
+                damping: type === "win" ? 12 : 20,
               }}
               className="text-center relative"
             >
-              {/* Glowing text background */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.08, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{ 
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className={`absolute inset-0 bg-gradient-to-r ${content.gradient} blur-3xl`}
-              />
-
+              {/* Crown above team name for win celebration */}
+              {type === "win" && (
+                <motion.div
+                  initial={{ y: -30, opacity: 0, scale: 0 }}
+                  animate={{ 
+                    y: 0, 
+                    opacity: 1, 
+                    scale: 1,
+                    rotate: [0, -10, 10, -10, 0],
+                  }}
+                  transition={{ 
+                    y: { delay: 0.5, type: "spring", stiffness: 200 },
+                    opacity: { delay: 0.5, duration: 0.5 },
+                    scale: { delay: 0.5, type: "spring", stiffness: 200 },
+                    rotate: { delay: 1, duration: 2, repeat: Infinity, ease: "easeInOut" },
+                  }}
+                  className="absolute -top-4 right-8 md:-top-6 md:right-12 lg:-top-8 lg:right-16 z-20"
+                >
+                  <Crown 
+                    className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 text-yellow-400 fill-yellow-400" 
+                    style={{
+                      filter: 'drop-shadow(0 0 20px rgba(250, 204, 21, 0.9)) drop-shadow(0 0 40px rgba(250, 204, 21, 0.6))',
+                    }}
+                  />
+                </motion.div>
+              )}
+              
+              {/* Win: Animated split text effect */}
               <motion.h1
-                animate={{ 
-                  scale: [1, 1.03, 1],
-                }}
-                transition={{ 
-                  duration: 1,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
+                animate={type === "win" ? {
+                  textShadow: [
+                    '0 0 30px rgba(255,255,255,0.5)',
+                    '0 0 60px rgba(255,255,255,0.9)',
+                    '0 0 30px rgba(255,255,255,0.5)',
+                  ],
+                } : {}}
+                transition={{ duration: 1.5, repeat: Infinity }}
                 className={`relative ${
                   type === "win" && winnerName 
-                    ? "text-6xl md:text-8xl lg:text-9xl" 
+                    ? "text-7xl md:text-9xl lg:text-[12rem]" 
                     : "text-8xl md:text-[10rem]"
                 } font-black bg-gradient-to-r ${content.gradient} bg-clip-text text-transparent`}
                 style={{
-                  textShadow: "0 0 40px rgba(255,255,255,0.7), 0 0 80px rgba(255,255,255,0.4)",
-                  WebkitTextStroke: "3px rgba(255,255,255,0.4)",
-                  letterSpacing: "0.05em",
+                  WebkitTextStroke: type === "win" ? "5px rgba(255,255,255,0.6)" : "3px rgba(255,255,255,0.4)",
+                  letterSpacing: type === "win" ? "0.1em" : "0.05em",
                 }}
               >
                 {content.title}
               </motion.h1>
               
-              {/* Subtitle with slide-in effect */}
+              {/* Subtitle with slide and fade */}
               <motion.p
-                initial={{ y: 30, opacity: 0 }}
+                initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ 
-                  delay: 0.4, 
-                  duration: 0.5,
+                  delay: 0.5, 
                   type: "spring",
+                  stiffness: 100,
                 }}
-                className="relative text-4xl md:text-5xl font-bold text-white mt-6"
+                className={`relative ${type === "win" ? "text-5xl md:text-7xl" : "text-4xl md:text-5xl"} font-bold text-white mt-8`}
                 style={{
-                  textShadow: "0 4px 20px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.3)",
+                  textShadow: "0 4px 30px rgba(0,0,0,0.9), 0 0 50px rgba(255,255,255,0.4)",
                 }}
               >
                 {content.subtitle}
               </motion.p>
 
-              {/* Decorative underline */}
-              <motion.div
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ 
-                  delay: 0.6, 
-                  duration: 0.6,
-                  ease: "easeOut",
-                }}
-                className={`h-1.5 mt-6 mx-auto rounded-full bg-gradient-to-r ${content.gradient}`}
-                style={{
-                  width: '60%',
-                  boxShadow: `0 0 20px ${content.ringColor}`,
-                }}
-              />
+              {/* Win: Animated underline with sweep effect */}
+              {type === "win" && (
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: [0, 1, 1, 0] }}
+                  transition={{ 
+                    duration: 3,
+                    times: [0, 0.3, 0.7, 1],
+                    repeat: Infinity,
+                  }}
+                  className="h-3 mt-8 mx-auto rounded-full bg-gradient-to-r from-transparent via-white to-transparent"
+                  style={{
+                    width: '80%',
+                    boxShadow: `0 0 40px ${content.ringColor}`,
+                  }}
+                />
+              )}
             </motion.div>
 
-            {/* Animated pulsing rings */}
-            {[...Array(3)].map((_, i) => (
+            {/* Removed old duplicate code - using new win animation above */}
+
+            {/* Pulsing rings for non-win celebrations only */}
+            {type !== "win" && [...Array(3)].map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -385,7 +458,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
                   delay: i * 0.4,
                   ease: "easeOut",
                 }}
-                className={`absolute inset-0 rounded-full border-4`}
+                className="absolute inset-0 rounded-full border-4"
                 style={{ 
                   borderColor: content.ringColor,
                   boxShadow: `0 0 30px ${content.ringColor}`,
@@ -395,22 +468,22 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
             
             {type === "win" && (
               <>
-                {/* Extra sparkle burst for win */}
-                {[...Array(16)].map((_, i) => (
+                {/* Extra sparkle burst for win - reduced particles */}
+                {[...Array(8)].map((_, i) => ( // Reduced from 16 to 8
                   <motion.div
                     key={i}
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ 
                       scale: [0, 1.2, 0],
                       opacity: [0, 1, 0],
-                      x: Math.cos(i * Math.PI / 8) * 250,
-                      y: Math.sin(i * Math.PI / 8) * 250,
+                      x: Math.cos(i * Math.PI / 4) * 250, // Adjusted for 8 particles
+                      y: Math.sin(i * Math.PI / 4) * 250,
                       rotate: [0, 180, 360],
                     }}
                     transition={{ 
                       duration: 2.5,
                       repeat: Infinity,
-                      delay: i * 0.08,
+                      delay: i * 0.16, // Increased delay for less overlap
                       ease: "easeOut",
                     }}
                     className="absolute w-5 h-5 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full"
